@@ -13,8 +13,14 @@ extern void delay(uint32_t count);
  *   - got to 40MHz clock
  */
 
+void pulse(uint8_t byte);
+
 int main(void)
 {
+	// prepare flash latency for 40MHz operation
+	FLASH->ACR &= ~(FLASH_ACR_LATENCY);
+	FLASH->ACR |= FLASH_ACR_LATENCY_2WS;
+
 	// turn on HSI
 	RCC->CR |= RCC_CR_HSION;
 	while ((RCC->CR & RCC_CR_HSIRDY) != RCC_CR_HSIRDY);
@@ -49,15 +55,28 @@ int main(void)
 	GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD5 | GPIO_PUPDR_PUPD0);
 	GPIOA->PUPDR |= GPIO_PUPDR_PUPD5_0 | GPIO_PUPDR_PUPD0_1; // pd for button
 
-	while (1) {
+	pulse(*((uint8_t *)0x08080000)); // 0b00100101
+
+	while (1);/* {
 		delay(500);
 		//if (GPIOA->IDR & 0x01)
 			GPIOA->BSRR |= 1 << 5;
 		delay(500);
 		//else
 			GPIOA->BRR |= 1 << 5;
-	}
+	}*/
 }
 
 void _exit(int code)
 { for (;;); }
+
+void pulse(uint8_t byte)
+{
+	int8_t i = 7;
+	do {
+		GPIOA->BSRR |= 1 << 5;
+		delay((byte & (1 << i)) ? 400 : 100);
+		GPIOA->BRR |= 1 << 5;
+		delay((byte & (1 << i)) ? 100 : 400);
+	} while (--i >= 0);
+}
