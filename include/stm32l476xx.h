@@ -18497,6 +18497,30 @@ typedef struct
 #define DFSDM2_IRQHandler              DFSDM1_FLT2_IRQHandler
 #define DFSDM3_IRQHandler              DFSDM1_FLT3_IRQHandler
 
+/*typedef struct {
+	uint32_t CPUID;
+	uint32_t ICSR;
+	uint32_t VTOR;
+	uint32_t AIRCR;
+	uint32_t SCR;
+	uint32_t CCR;
+	uint32_t SHPR1;
+	uint32_t SHPR2;
+	uint32_t SHPR3;
+	uint32_t SHCRS;
+	uint32_t CFSR;
+	uint32_t HFSR;
+	uint32_t rsvd;
+	uint32_t MMAR;
+	uint32_t BFAR;
+	uint32_t AFSR;
+} __attribute__ ((packed)) SCB_TypeDef;
+
+#define SCB_ADDR	(0xE000ED00)
+#define SCB			*((SCB_TypeDef *)SCB_ADDR)
+
+#define SCB_ICSR_PENDSVSET		(1 << 28)*/
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
