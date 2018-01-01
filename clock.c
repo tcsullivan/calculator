@@ -45,15 +45,18 @@ void delay(uint32_t count)
 	while (ticks < target);
 }
 
-void PendSV_Handler(void) {
-}
-
+__attribute__ ((naked))
 void SysTick_Handler(void)
 {
+	uint32_t lr;
+	asm("mov %0, lr" : "=r" (lr));
+
 	// just keep counting
 	ticks++;
 
-	if (!(ticks % 500))
-		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk; 
+	if (!(ticks % 10))
+		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+
+	asm("mov lr, %0; bx lr" :: "r" (lr));
 }
 
