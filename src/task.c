@@ -12,7 +12,9 @@ typedef struct {
 #define MAX_TASKS	4
 
 static task_t tasks[MAX_TASKS];
-static int next_idx = 0;
+static volatile int next_idx = 0;
+
+static uint8_t task_enable = 0;
 
 void task_init(void (*init)(void))
 {
@@ -23,15 +25,13 @@ void task_init(void (*init)(void))
 	asm("\
 		msr psp, %0; \
 		mrs r0, control; \
-		orr r0, r0, #2; \
+		orr r0, r0, #3; \
 		msr control, r0; \
 		isb; \
 	" :: "r" (tasks[0].sp));
 
+	task_enable = 1;
 	init();
-
-	// force switch to tasking, call pendsv
-	//SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 }
 
 extern void _exit(int);
@@ -42,7 +42,6 @@ void task_exit(void)
 	tasks[next_idx].use = 0;
 	asm("cpsie i");
 	while (1); // bye
-	//_exit(0);
 }
 
 void task_start(void (*task)(void), uint16_t stackSize)
@@ -69,8 +68,10 @@ void task_start(void (*task)(void), uint16_t stackSize)
 __attribute__ ((naked))
 void PendSV_Handler(void) 
 {
+	if (task_enable == 0)
+		asm("bx lr");
+
 	// save state
-	//stmdb r0!, {r4-r11};
 	asm("\
 		cpsid i; \
 		isb; \
@@ -89,7 +90,6 @@ void PendSV_Handler(void)
 	} while (tasks[next_idx].use == 0);
 
 	// restore
-	//ldmia r0!, {r4-r11};
 	asm("\
 		mov r0, %0; \
 		ldmia r0!, {r4-r11}; \

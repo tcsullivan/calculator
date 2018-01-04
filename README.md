@@ -8,4 +8,6 @@ Required packages:
 * openocd
 * make
   
-Use run.sh to upload the final output to the processor.
+Use ```run.sh``` to upload the final output to the processor.  
+  
+To make an initrd, add files to ```initrd/``` and then run ```./mkinitrd.sh```.

@@ -3,12 +3,12 @@
 
 #define RAM_END 0x20018000
 
-//extern void *end;
-//extern uint32_t _total_ram;
+#define HEAP_SIZE (16 * 1024)
+
 static uint32_t offset = 0;
 
-__attribute__ ((section(".data")))
-uint8_t heap[8192];
+__attribute__ ((section("._user_heap_stack")))
+uint8_t heap[HEAP_SIZE];
 void *end = heap;
 
 void heap_init(void)
@@ -18,7 +18,7 @@ void heap_init(void)
 
 uint32_t heap_available(void)
 {
-	return 0;//	return _total_ram - offset;
+	return HEAP_SIZE - offset;
 }
 
 void *hmalloc(uint32_t size)

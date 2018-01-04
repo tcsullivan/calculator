@@ -1,16 +1,44 @@
-MCUFLAGS = -mthumb -mcpu=cortex-m4
-CFLAGS = -Iinclude $(MCUFLAGS)
+CROSS = arm-none-eabi-
+CC = gcc
+AS = as
+AR = ar
+OBJCOPY = objcopy
 
-all:
-	arm-none-eabi-as $(MCUFLAGS) startup_stm32l476xx.s -c -o out/startup_stm32l476xx.o
-	arm-none-eabi-gcc $(CFLAGS) system_stm32l4xx.c -c -o out/system_stm32l4xx.o
-	arm-none-eabi-gcc $(CFLAGS) stm32l4xx_it.c -c -o out/stm32l4xx_it.o
-	arm-none-eabi-gcc $(CFLAGS) clock.c -c -o out/clock.o
-	arm-none-eabi-gcc $(CFLAGS) heap.c -c -o out/heap.o
-	arm-none-eabi-gcc $(CFLAGS) task.c -c -o out/task.o
-	arm-none-eabi-gcc $(CFLAGS) main.c -c -o out/main.o
-	arm-none-eabi-gcc $(CFLAGS) -T link.ld out/*.o -o out/main.elf
-	arm-none-eabi-objcopy -O ihex out/main.elf main.hex
+MCUFLAGS = -mthumb -mcpu=cortex-m4
+AFLAGS = $(MCUFLAGS) 
+CFLAGS = $(MCUFLAGS) -Iinclude -ffreestanding -Wall -Werror -Wextra
+OFLAGS = -O ihex
+
+CFILES = $(wildcard src/*.c)
+AFILES = $(wildcard src/*.s) 
+
+OUTDIR = out
+OFILES = $(patsubst src/%.c, $(OUTDIR)/%.o, $(CFILES)) \
+	 $(patsubst src/%.s, $(OUTDIR)/%.asm.o, $(AFILES))
+
+LIBDIR = -Llib
+LIBS = -llua
+
+HEX = main.hex
+
+all: $(HEX)
+
+$(HEX): $(OFILES)
+	@echo "  LINK   " $(HEX)
+	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm initrd.img out/initrd.img.o
+	@$(CROSS)$(CC) $(CFLAGS) $(LIBDIR) $(LIBS) -T link.ld out/*.o -o out/main.elf
+	@$(CROSS)$(OBJCOPY) $(OFLAGS) out/main.elf $(HEX)
+
+$(OUTDIR)/%.o: src/%.c
+	@echo "  CC     " $<
+	@$(CROSS)$(CC) $(CFLAGS) -c $< -o $@
+
+$(OUTDIR)/%.asm.o: src/%.s
+	@echo "  AS     " $<
+	@$(CROSS)$(AS) $(AFLAGS) -c $< -o $@
 
 clean:
-	rm -rf out/*
+	@echo "  CLEAN"
+	@rm -rf out/*
+
+

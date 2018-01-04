@@ -35,9 +35,6 @@ ENTRY(Reset_Handler)
 /* Highest address of the user mode stack */
 _estack = 0x20018000;    /* end of RAM */
 
-_Min_Stack_Size = 0x0400; /* 1k min. stack */
-_Min_Heap_Size = 0x0400; /* 1k min. heap */
-
 /* Specify the memory areas */
 MEMORY
 {
@@ -82,14 +79,14 @@ SECTIONS
     . = ALIGN(8);
   } >FLASH
 
-  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
+  .ARM.extab : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
   .ARM : {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
   } >FLASH
 
-  .preinit_array     :
+  .preinit_array :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
@@ -146,10 +143,7 @@ SECTIONS
   ._user_heap_stack :
   {
     . = ALIGN(4);
-    PROVIDE ( end = . );
-    PROVIDE ( _end = . );
-    . = . + _Min_Heap_Size;
-    . = . + _Min_Stack_Size;
+    *(._user_heap_stack)
     . = ALIGN(4);
   } >RAM
 
@@ -166,4 +160,3 @@ SECTIONS
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
 
-_total_ram = _estack - _end;
