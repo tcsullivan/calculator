@@ -45,12 +45,20 @@ void kmain(void)
 {
 	asm("cpsie i");
 
-	lcd_init();
+	task_start(lcd_handler, 128);
+	delay(200);
 
 	char *s = initrd_getfile("test.txt");
-	lcd_puts(s);
+	const char *t = "Yoyoyo";
 
-	while (1)
-		delay(100);
+	asm("mov r0, %0; svc 2" :: "r" (s));
+	asm("mov r0, %0; svc 2" :: "r" (t));
+
+	while (1) {
+		gpio_dout(GPIOA, 5, 1);
+		delay(500);
+		gpio_dout(GPIOA, 5, 0);
+		delay(500);
+	}
 }
 

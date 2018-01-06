@@ -1,6 +1,7 @@
 #include <lcd.h>
 #include <clock.h>
 #include <gpio.h>
+#include <string.h>
 
 #define LCD_D0 GPIO_PORT(A, 0)
 #define LCD_D1 GPIO_PORT(A, 1)
@@ -114,4 +115,39 @@ void lcd_init(void)
 	lcd_cmd(0x0D);
 	delay(5);
 	lcd_clear();
+}
+
+/**
+ * Task code
+ */
+
+static int bufpos = 0;
+static char buf[64];
+void lcd_clearbuf(void)
+{
+	bufpos = 0;
+	for (int i = 0; i < 32; i++)
+		buf[i] = 0;
+}
+
+void lcd_put(const char *s)
+{
+	int len = strlen(s);
+	int off = (bufpos + len < 64) ? len : 64 - bufpos;
+	strncpy(buf + bufpos, s, off);
+	bufpos += off;
+}
+
+void lcd_handler(void)
+{
+	lcd_init();
+	lcd_clearbuf();
+
+	while (1) {
+		if (buf[0] != '\0') {
+			lcd_puts(buf);
+			lcd_clearbuf();
+		}
+		delay(100);
+	}
 }
