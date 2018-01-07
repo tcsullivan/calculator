@@ -5,6 +5,7 @@
 #include <gpio.h>
 #include <lcd.h>
 #include <initrd.h>
+#include <serial.h>
 
 /**
  * Accomplishments:
@@ -15,7 +16,8 @@
  *   - gpio lib
  *   - lcd support
  *   - initrd support
- *   - lua?
+ *   - lua? - no, something better, smaller
+ *   - serial IO
  */
 
 void pulse(uint8_t byte);
@@ -35,12 +37,14 @@ int main(void)
 
 	gpio_mode(GPIOA, 5, OUTPUT);
 
+	serial_init();
+
 	task_init(kmain);
 
 	while (1);
 }
 
-void task(void);
+void serial_getter(void);
 void kmain(void)
 {
 	asm("cpsie i");
@@ -48,12 +52,11 @@ void kmain(void)
 	task_start(lcd_handler, 128);
 	delay(200);
 
-	char *s = initrd_getfile("test.txt");
-	const char *t = "Yoyoyo";
+	//char *s = initrd_getfile("test.txt");
+	// svc puts
+	//asm("mov r0, %0; svc 2" :: "r" (s));
 
-	asm("mov r0, %0; svc 2" :: "r" (s));
-	asm("mov r0, %0; svc 2" :: "r" (t));
-
+	task_start(serial_getter, 128);
 	while (1) {
 		gpio_dout(GPIOA, 5, 1);
 		delay(500);
@@ -62,3 +65,11 @@ void kmain(void)
 	}
 }
 
+void serial_getter(void)
+{
+	char buf[2] = { 0, 0 };
+	while (1) {
+		buf[0] = serial_get();
+		asm("mov r0, %0; svc 2" :: "r" (buf));
+	}
+}

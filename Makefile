@@ -17,7 +17,7 @@ OFILES = $(patsubst src/%.c, $(OUTDIR)/%.o, $(CFILES)) \
 	 $(patsubst src/%.s, $(OUTDIR)/%.asm.o, $(AFILES))
 
 LIBDIR = -Llib
-LIBS = -llua
+LIBS = 
 
 HEX = main.hex
 
