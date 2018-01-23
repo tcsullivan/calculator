@@ -25,3 +25,15 @@ char serial_get(void)
 	while (!(USART2->ISR & USART_ISR_RXNE));
 	return USART2->RDR & 0xFF;
 }
+
+void serial_gets(char *buf)
+{
+	uint16_t index = 0;
+
+	do {
+		buf[index] = serial_get();
+	} while (buf[index++] != '\r');
+
+	buf[index - 1] = '\0';
+	//return buf;
+}

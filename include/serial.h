@@ -3,6 +3,8 @@
 
 void serial_init(void);
 void serial_put(int c);
+
 char serial_get(void);
+void serial_gets(char *buf);
 
 #endif // SERIAL_H_

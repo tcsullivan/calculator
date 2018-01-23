@@ -6,6 +6,22 @@ void _exit(int code)
 	for (;;);
 }
 
+int _getpid(int pid)
+{
+	(void)pid;
+	return 0;
+}
+
+void _kill(int pid)
+{
+	(void)pid;
+}
+
+void _sbrk(void)
+{
+
+}
+
 char *itoa(int n, int base)
 {
 	static char buf[16];

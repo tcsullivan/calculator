@@ -6,6 +6,7 @@
 #include <lcd.h>
 #include <initrd.h>
 #include <serial.h>
+#include <parser.h>
 
 /**
  * Accomplishments:
@@ -44,19 +45,39 @@ int main(void)
 	while (1);
 }
 
-void serial_getter(void);
+void script_puts(stack_t *stack)
+{
+	asm("mov r0, %0; svc 2" :: "r" (stack[0]));
+}
+
+void task_interpreter(void)
+{
+	interpreter interp;
+	interpreter_init(&interp);
+	interpreter_define_cfunc(&interp, "print", script_puts);
+
+	char buf[32];
+	while (1) {
+		serial_gets(buf);
+		interpreter_doline(&interp, buf);
+	}
+}
+
 void kmain(void)
 {
 	asm("cpsie i");
 
 	task_start(lcd_handler, 128);
 	delay(200);
+	task_start(task_interpreter, 512);
 
 	//char *s = initrd_getfile("test.txt");
 	// svc puts
 	//asm("mov r0, %0; svc 2" :: "r" (s));
 
-	task_start(serial_getter, 128);
+	//extern void lua_start(void);
+	//lua_start();
+
 	while (1) {
 		gpio_dout(GPIOA, 5, 1);
 		delay(500);
@@ -65,11 +86,3 @@ void kmain(void)
 	}
 }
 
-void serial_getter(void)
-{
-	char buf[2] = { 0, 0 };
-	while (1) {
-		buf[0] = serial_get();
-		asm("mov r0, %0; svc 2" :: "r" (buf));
-	}
-}

@@ -30,9 +30,12 @@ void *hmalloc(uint32_t size)
 
 void *hcalloc(uint32_t count, uint32_t size)
 {
-	uint32_t total = count * size;
+	/*uint32_t total = count * size;
 	void *alloc = hmalloc(total);
 	for (uint32_t i = 0; i < total; i++)
 		((uint8_t *)alloc)[i] = 0;
-	return alloc;
+	return alloc;*/
+
+	// calloc broke
+	return hmalloc(count * size);
 }

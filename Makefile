@@ -16,9 +16,6 @@ OUTDIR = out
 OFILES = $(patsubst src/%.c, $(OUTDIR)/%.o, $(CFILES)) \
 	 $(patsubst src/%.s, $(OUTDIR)/%.asm.o, $(AFILES))
 
-LIBDIR = -Llib
-LIBS = 
-
 HEX = main.hex
 
 all: $(HEX)
@@ -26,7 +23,7 @@ all: $(HEX)
 $(HEX): $(OFILES)
 	@echo "  LINK   " $(HEX)
 	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm initrd.img out/initrd.img.o
-	@$(CROSS)$(CC) $(CFLAGS) $(LIBDIR) $(LIBS) -T link.ld out/*.o -o out/main.elf
+	@$(CROSS)$(CC) $(CFLAGS) -T link.ld out/*.o -o out/main.elf
 	@$(CROSS)$(OBJCOPY) $(OFLAGS) out/main.elf $(HEX)
 
 $(OUTDIR)/%.o: src/%.c
