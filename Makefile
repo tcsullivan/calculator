@@ -4,9 +4,9 @@ AS = as
 AR = ar
 OBJCOPY = objcopy
 
-MCUFLAGS = -mthumb -mcpu=cortex-m4
+MCUFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 AFLAGS = $(MCUFLAGS) 
-CFLAGS = $(MCUFLAGS) -Iinclude -ffreestanding -Wall -Werror -Wextra
+CFLAGS = $(MCUFLAGS) -Iinclude -fno-builtin -fsigned-char -ffreestanding -Wall -Werror -Wextra
 OFLAGS = -O ihex
 
 CFILES = $(wildcard src/*.c)

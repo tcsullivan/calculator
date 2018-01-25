@@ -9,7 +9,7 @@ typedef struct {
 	void (*code)(void);
 } task_t;
 
-#define MAX_TASKS	4
+#define MAX_TASKS	6
 
 static task_t tasks[MAX_TASKS];
 static volatile int next_idx = 0;
@@ -102,7 +102,7 @@ void PendSV_Handler(void)
 	asm("\
 		mov r0, #0xFFFFFFFD; \
 		cpsie i; \
-		bx r0; \
+		bx lr; \
 	");
 }
 

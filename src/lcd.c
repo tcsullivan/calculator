@@ -3,6 +3,8 @@
 #include <gpio.h>
 #include <string.h>
 
+//#define USE_DELAY
+
 #define LCD_D0 GPIO_PORT(A, 0)
 #define LCD_D1 GPIO_PORT(A, 1)
 #define LCD_D2 GPIO_PORT(A, 4)
@@ -19,7 +21,12 @@
 void lcd_pulse(void)
 {
 	gpio_dout(LCD_E, 1);
+#ifdef USE_DELAY
 	delay(1);
+#else
+	for (uint16_t i = 0; i < 10000; i++)
+		asm("");
+#endif // USE_DELAY
 	gpio_dout(LCD_E, 0);
 }
 

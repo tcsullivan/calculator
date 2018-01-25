@@ -40,6 +40,9 @@ int main(void)
 
 	serial_init();
 
+	// enable FPU
+	SCB->CPACR |= (0xF << 20);
+
 	task_init(kmain);
 
 	while (1);
@@ -57,19 +60,38 @@ void task_interpreter(void)
 	interpreter_define_cfunc(&interp, "print", script_puts);
 
 	char buf[32];
+	int index;
 	while (1) {
-		serial_gets(buf);
+		index = 0;
+		do {
+			buf[index] = serial_get();
+		} while (buf[index++] != '\r' && index < 32);
+		buf[index - 1] = '\0';
+	
 		interpreter_doline(&interp, buf);
 	}
 }
 
+void task_suck(void)
+{
+	float i = 1;
+
+	while (1) {
+		i += 0.123;
+		lcd_puti((int)(i * 1000));
+		delay(2000);
+	}
+}
+
+#include <stdio.h>
 void kmain(void)
 {
 	asm("cpsie i");
 
 	task_start(lcd_handler, 128);
 	delay(200);
-	task_start(task_interpreter, 512);
+	task_start(task_suck, 1024);
+	//task_start(task_interpreter, 1024);
 
 	//char *s = initrd_getfile("test.txt");
 	// svc puts

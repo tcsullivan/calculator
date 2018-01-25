@@ -26,13 +26,13 @@ char serial_get(void)
 	return USART2->RDR & 0xFF;
 }
 
-void serial_gets(char *buf)
+void serial_gets(char *buf, int max)
 {
 	uint16_t index = 0;
 
 	do {
 		buf[index] = serial_get();
-	} while (buf[index++] != '\r');
+	} while (index++ < max && buf[index] != '\r');
 
 	buf[index - 1] = '\0';
 	//return buf;
