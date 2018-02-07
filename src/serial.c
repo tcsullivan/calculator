@@ -1,5 +1,6 @@
 #include <stm32l476xx.h>
 #include <gpio.h>
+#include <clock.h>
 
 void serial_init(void)
 {
@@ -22,7 +23,8 @@ void serial_put(int c)
 
 char serial_get(void)
 {
-	while (!(USART2->ISR & USART_ISR_RXNE));
+	while (!(USART2->ISR & USART_ISR_RXNE))
+		delay(10);
 	return USART2->RDR & 0xFF;
 }
 
@@ -32,6 +34,7 @@ void serial_gets(char *buf, int max)
 
 	do {
 		buf[index] = serial_get();
+		serial_put(buf[index]);
 	} while (index++ < max && buf[index] != '\r');
 
 	buf[index - 1] = '\0';

@@ -142,9 +142,9 @@ SECTIONS
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
-    . = ALIGN(4);
+    . = ALIGN(8);
     *(._user_heap_stack)
-    . = ALIGN(4);
+    . = ALIGN(8);
   } >RAM
 
   

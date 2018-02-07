@@ -5,7 +5,8 @@
 
 uint32_t heap_available(void);
 
-void *hmalloc(uint32_t size);
-void *hcalloc(uint32_t count, uint32_t size);
+void *malloc(uint32_t size);
+void *calloc(uint32_t count, uint32_t size);
+void free(void *buf);
 
 #endif // HEAP_H_

@@ -31,7 +31,7 @@ uint8_t initrd_nametest(char *file, const char *want)
 	return 0;
 }
 
-uint32_t pow10(uint8_t n)
+uint32_t ipow10(uint8_t n)
 {
 	uint32_t i = 1;
 	while (n--)
@@ -46,7 +46,7 @@ uint32_t initrd_getsize(initrd_file *file)
 	while (*--p == ' ');
 
 	for (int8_t i = p - file->size, j = 0; i >= 0; i--, j++)
-		size += (*p-- - '0') * pow10(j);
+		size += (*p-- - '0') * ipow10(j);
 
 	return size;
 }

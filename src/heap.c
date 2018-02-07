@@ -1,15 +1,11 @@
 #include <heap.h>
 #include <stm32l476xx.h>
 
-#define RAM_END 0x20018000
-
 #define HEAP_SIZE (16 * 1024)
 
 static uint32_t offset = 0;
 
-__attribute__ ((section("._user_heap_stack")))
 uint8_t heap[HEAP_SIZE];
-void *end = heap;
 
 void heap_init(void)
 {
@@ -21,14 +17,14 @@ uint32_t heap_available(void)
 	return HEAP_SIZE - offset;
 }
 
-void *hmalloc(uint32_t size)
+void *malloc(uint32_t size)
 {
-	void *alloc = end + offset;
+	void *alloc = &heap[offset];
 	offset += size;
 	return alloc;
 }
 
-void *hcalloc(uint32_t count, uint32_t size)
+void *calloc(uint32_t count, uint32_t size)
 {
 	/*uint32_t total = count * size;
 	void *alloc = hmalloc(total);
@@ -37,5 +33,10 @@ void *hcalloc(uint32_t count, uint32_t size)
 	return alloc;*/
 
 	// calloc broke
-	return hmalloc(count * size);
+	return malloc(count * size);
+}
+
+void free(void *ptr)
+{
+	(void)ptr;
 }

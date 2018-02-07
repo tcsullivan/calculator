@@ -50,7 +50,7 @@ void task_start(void (*task)(void), uint16_t stackSize)
 
 	for (int i = 0; i < MAX_TASKS; i++) {
 		if (tasks[i].use == 0) {
-			tasks[i].stack = hmalloc(stackSize);
+			tasks[i].stack = malloc(stackSize);
 			tasks[i].sp = tasks[i].stack + stackSize - 16;
 			tasks[i].sp[13] = (uint32_t)task_exit;
 			tasks[i].sp[14] = (uint32_t)task;

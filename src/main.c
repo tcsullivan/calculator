@@ -48,57 +48,31 @@ int main(void)
 	while (1);
 }
 
-void script_puts(stack_t *stack)
+int script_puts(interpreter *it)
 {
-	asm("mov r0, %0; svc 2" :: "r" (stack[0]));
+	char *s = igetarg_string(it, 0);
+	asm("mov r0, %0; svc 2" :: "r" (s));
+	return 0;
 }
 
 void task_interpreter(void)
 {
-	interpreter interp;
-	interpreter_init(&interp);
-	interpreter_define_cfunc(&interp, "print", script_puts);
+	interpreter it;
+	iinit(&it);
+	inew_cfunc(&it, "print", script_puts);
 
-	char buf[32];
-	int index;
-	while (1) {
-		index = 0;
-		do {
-			buf[index] = serial_get();
-		} while (buf[index++] != '\r' && index < 32);
-		buf[index - 1] = '\0';
-	
-		interpreter_doline(&interp, buf);
-	}
+	while (1);
 }
 
-void task_suck(void)
-{
-	float i = 1;
-
-	while (1) {
-		i += 0.123;
-		lcd_puti((int)(i * 1000));
-		delay(2000);
-	}
-}
-
-#include <stdio.h>
 void kmain(void)
 {
 	asm("cpsie i");
 
 	task_start(lcd_handler, 128);
 	delay(200);
-	task_start(task_suck, 1024);
-	//task_start(task_interpreter, 1024);
+	task_start(task_interpreter, 2048);
 
 	//char *s = initrd_getfile("test.txt");
-	// svc puts
-	//asm("mov r0, %0; svc 2" :: "r" (s));
-
-	//extern void lua_start(void);
-	//lua_start();
 
 	while (1) {
 		gpio_dout(GPIOA, 5, 1);

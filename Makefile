@@ -6,7 +6,8 @@ OBJCOPY = objcopy
 
 MCUFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 AFLAGS = $(MCUFLAGS) 
-CFLAGS = $(MCUFLAGS) -Iinclude -fno-builtin -fsigned-char -ffreestanding -Wall -Werror -Wextra
+CFLAGS = $(MCUFLAGS) -Iinclude -fno-builtin -fsigned-char -ffreestanding -Wall -Werror -Wextra -Wno-discarded-qualifiers
+LFLAGS = 
 OFLAGS = -O ihex
 
 CFILES = $(wildcard src/*.c)
@@ -23,7 +24,7 @@ all: $(HEX)
 $(HEX): $(OFILES)
 	@echo "  LINK   " $(HEX)
 	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm initrd.img out/initrd.img.o
-	@$(CROSS)$(CC) $(CFLAGS) -T link.ld out/*.o -o out/main.elf
+	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) -T link.ld out/*.o -o out/main.elf
 	@$(CROSS)$(OBJCOPY) $(OFLAGS) out/main.elf $(HEX)
 
 $(OUTDIR)/%.o: src/%.c
