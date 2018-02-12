@@ -128,8 +128,10 @@ void lcd_init(void)
  * Task code
  */
 
-static int bufpos = 0;
-static char buf[64];
+volatile int bufpos = 0;
+volatile char buf[32];
+volatile uint8_t using = 0;
+
 void lcd_clearbuf(void)
 {
 	bufpos = 0;
@@ -140,9 +142,15 @@ void lcd_clearbuf(void)
 void lcd_put(const char *s)
 {
 	int len = strlen(s);
-	int off = (bufpos + len < 64) ? len : 64 - bufpos;
-	strncpy(buf + bufpos, s, off);
-	bufpos += off;
+	int i;
+
+	using = 1;
+	for (i = 0; i < len; bufpos++, i++) {
+		if (bufpos > 31)
+			bufpos = 0;
+		buf[bufpos] = s[i];
+	}
+	using = 0;
 }
 
 void lcd_handler(void)
@@ -151,7 +159,7 @@ void lcd_handler(void)
 	lcd_clearbuf();
 
 	while (1) {
-		if (buf[0] != '\0') {
+		if (!using && buf[0] != '\0') {
 			lcd_puts(buf);
 			lcd_clearbuf();
 		}

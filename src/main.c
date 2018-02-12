@@ -7,22 +7,13 @@
 #include <initrd.h>
 #include <serial.h>
 #include <parser.h>
+#include <stack.h>
 
-/**
- * Accomplishments:
- *   - GPIO in/out
- *   - got to 80MHz clock
- *   - basic heap
- *   - multitask, can exit
- *   - gpio lib
- *   - lcd support
- *   - initrd support
- *   - lua? - no, something better, smaller
- *   - serial IO
- */
+#include <stdlib.h>
+#include <string.h>
 
-void pulse(uint8_t byte);
 void kmain(void);
+void task_interpreter(void);
 
 int main(void)
 {
@@ -51,7 +42,15 @@ int main(void)
 int script_puts(interpreter *it)
 {
 	char *s = igetarg_string(it, 0);
+	//lcd_puts(s);
 	asm("mov r0, %0; svc 2" :: "r" (s));
+	return 0;
+}
+
+int script_delay(interpreter *it)
+{
+	int ms = igetarg_integer(it, 0);
+	delay(ms);
 	return 0;
 }
 
@@ -60,8 +59,41 @@ void task_interpreter(void)
 	interpreter it;
 	iinit(&it);
 	inew_cfunc(&it, "print", script_puts);
+	inew_cfunc(&it, "delay", script_delay);
 
-	while (1);
+	char *s = initrd_getfile("init");
+	if (s == 0)
+		goto end;
+
+	char *linebuf = (char *)malloc(120);
+	uint32_t i = 0, prev = 0, lc;
+	uint32_t size = initrd_getfilesize("init");
+	int ret;
+	while (i < size) {
+		for (; s[i] != '\n' && s[i] != '\0'; i++);
+		lc = i - prev;
+		if (lc == 0) {
+			prev = ++i;
+			continue;
+		}
+		strncpy(linebuf, s + prev, lc + 1);
+		linebuf[lc] = '\0';
+		ret = idoline(&it, linebuf);
+		if (ret < 0)
+			break;
+		prev = ++i;
+	}
+
+	if (ret < 0) {
+		lcd_puts("Error: ");
+		lcd_puts(itoa(ret, linebuf, 10));
+	}
+	free(linebuf);
+	//iend(&it); // nah
+
+end:
+	while (1)
+		delay(10);
 }
 
 void kmain(void)
@@ -70,7 +102,7 @@ void kmain(void)
 
 	task_start(lcd_handler, 128);
 	delay(200);
-	task_start(task_interpreter, 2048);
+	task_start(task_interpreter, 4096);
 
 	//char *s = initrd_getfile("test.txt");
 

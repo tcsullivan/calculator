@@ -1,0 +1,10 @@
+set a 0
+do
+	set a (a + 1)
+	delay 1
+while (a < 100)
+
+if (a == 100)
+	print "All good!"
+end
+

@@ -1,5 +1,5 @@
 #include <task.h>
-#include <heap.h>
+#include <stdlib.h>
 #include <stm32l476xx.h>
 
 typedef struct {
@@ -21,7 +21,7 @@ void task_init(void (*init)(void))
 	for (int i = 0; i < MAX_TASKS; i++)
 		tasks[i].use = 0;
 
-	task_start(init, 1024);
+	task_start(init, 4096);
 	asm("\
 		msr psp, %0; \
 		mrs r0, control; \
