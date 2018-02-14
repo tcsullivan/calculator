@@ -4,6 +4,7 @@
 #include <task.h>
 #include <gpio.h>
 #include <lcd.h>
+#include <display.h>
 #include <initrd.h>
 #include <serial.h>
 #include <parser.h>
@@ -100,9 +101,17 @@ void kmain(void)
 {
 	asm("cpsie i");
 
-	task_start(lcd_handler, 128);
-	delay(200);
-	task_start(task_interpreter, 4096);
+	dsp_init();
+    dsp_set_addr(0, 0, LCD_WIDTH, LCD_HEIGHT);
+    int w = LCD_WIDTH * LCD_HEIGHT;
+    do {
+        dsp_write_data(0);//c >> 8);
+        dsp_write_data(0);//c & 0xFF);
+    } while (w--);
+
+	//task_start(lcd_handler, 128);
+	//delay(200);
+	//task_start(task_interpreter, 4096);
 
 	//char *s = initrd_getfile("test.txt");
 
