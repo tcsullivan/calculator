@@ -17,8 +17,11 @@ void dsp_putchar(int c)
 			dsp_write_data(inconsolata24[start + (i * 192 * 2) + j]);
 	}
 
-	if (++curx == 26)
-		curx = 0, cury++;
+	if (++curx == 40) {
+		curx = 0;
+		if (++cury == 10)
+			cury = 0;
+	}
 }
 
 void dsp_puts(const char *s)
@@ -26,4 +29,20 @@ void dsp_puts(const char *s)
 	unsigned int i = 0;
 	while (s[i])
 		dsp_putchar(s[i++]);
+}
+
+void dsp_cpos(int x, int y)
+{
+	curx = x;
+	cury = y;
+}
+
+void dsp_rect(int x, int y, int w, int h, uint16_t color)
+{
+	dsp_set_addr(x, y, x + w - 1, y + h - 1);
+	int countdown = w * h;
+	do {
+		dsp_write_data(color >> 8);
+		dsp_write_data(color & 0xFF);
+	} while (countdown--);
 }

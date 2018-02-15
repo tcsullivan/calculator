@@ -5,6 +5,7 @@
 #include <gpio.h>
 #include <lcd.h>
 #include <display.h>
+#include <display_draw.h>
 #include <initrd.h>
 #include <serial.h>
 #include <parser.h>
@@ -43,8 +44,8 @@ int main(void)
 int script_puts(interpreter *it)
 {
 	char *s = igetarg_string(it, 0);
-	//lcd_puts(s);
-	asm("mov r0, %0; svc 2" :: "r" (s));
+	dsp_puts(s);
+	//asm("mov r0, %0; svc 2" :: "r" (s));
 	return 0;
 }
 
@@ -102,23 +103,17 @@ void kmain(void)
 	asm("cpsie i");
 
 	dsp_init();
-	//uint16_t c = 0x38;
-	uint16_t c = 0;
-	for (int i = 0; i < LCD_HEIGHT; i++) {
-		dsp_set_addr(0, i, LCD_WIDTH - 1, i);
-		int w = LCD_WIDTH - 1;
-		do {
-			dsp_write_data(c);//c >> 8);
-			dsp_write_data(c);//c & 0xFF);
-		} while (w--);
-	}
 
-	extern void dsp_puts(const char *);
-	dsp_puts("Hello, world! My name is Clyne.");
+	dsp_rect(0, 0, LCD_WIDTH, 105, dsp_color(0xFF, 0, 0));
+	dsp_rect(0, 105, LCD_WIDTH, 105, dsp_color(0, 0xFF, 0));
+	dsp_rect(0, 210, LCD_WIDTH, 110, dsp_color(0, 0, 0xFF));
+
+	//dsp_puts("Hello, world! My name is Clyne. I enjoy car rides and long 
+//walks on the beach");
 
 	//task_start(lcd_handler, 128);
 	//delay(200);
-	//task_start(task_interpreter, 4096);
+	task_start(task_interpreter, 4096);
 
 	//char *s = initrd_getfile("test.txt");
 

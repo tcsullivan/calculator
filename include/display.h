@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define LCD_WIDTH  320
-#define LCD_HEIGHT 480
+#define LCD_WIDTH  480
+#define LCD_HEIGHT 320
 
 #define COLOR_MAX 31
 

@@ -145,18 +145,10 @@ void dsp_init(void)
 	dsp_write_cmd(0xC5); // frame rate/inversion ctl
 	dsp_write_data(0x03);
 
-	// backlight
-	dsp_write_cmd(0x55);
-	dsp_write_data(0x01);
-	dsp_write_cmd(0x53);
-	dsp_write_data(0x2C);
-	dsp_write_cmd(0x51);
-	dsp_write_data(0x01);
-
 	dsp_write_cmd(0x36); // rot. and stuff
-	dsp_write_data(0x41);
+	dsp_write_data(0xA3);
 	dsp_write_cmd(0x3A); // set pixel format
-	dsp_write_data(0x65);
+	dsp_write_data(0x55);
 	dsp_write_cmd(0x11);
 	delay(150);
 	dsp_write_cmd(0x29); // set display on
@@ -171,7 +163,5 @@ void dsp_init(void)
 	dsp_write_cmd(0x37);
 	dsp_write_data(0x00);
 	dsp_write_data(0x00);*/
-
-	dsp_set_addr(0, 0, LCD_WIDTH, LCD_HEIGHT);
 }
 
