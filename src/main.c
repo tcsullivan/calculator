@@ -102,12 +102,19 @@ void kmain(void)
 	asm("cpsie i");
 
 	dsp_init();
-    dsp_set_addr(0, 0, LCD_WIDTH, LCD_HEIGHT);
-    int w = LCD_WIDTH * LCD_HEIGHT;
-    do {
-        dsp_write_data(0);//c >> 8);
-        dsp_write_data(0);//c & 0xFF);
-    } while (w--);
+	//uint16_t c = 0x38;
+	uint16_t c = 0;
+	for (int i = 0; i < LCD_HEIGHT; i++) {
+		dsp_set_addr(0, i, LCD_WIDTH - 1, i);
+		int w = LCD_WIDTH - 1;
+		do {
+			dsp_write_data(c);//c >> 8);
+			dsp_write_data(c);//c & 0xFF);
+		} while (w--);
+	}
+
+	extern void dsp_puts(const char *);
+	dsp_puts("Hello, world! My name is Clyne.");
 
 	//task_start(lcd_handler, 128);
 	//delay(200);

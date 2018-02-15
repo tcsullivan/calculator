@@ -38,6 +38,7 @@ void gpio_init(void);
 
 void gpio_pupd(GPIO_TypeDef *port, uint8_t pin, uint8_t pupd);
 void gpio_type(GPIO_TypeDef *port, uint8_t pin, uint8_t type);
+void gpio_speed(GPIO_TypeDef *port, uint8_t pin, uint8_t speed);
 void gpio_mode(GPIO_TypeDef *port, uint8_t pin, uint8_t mode);
 void gpio_dout(GPIO_TypeDef *port, uint8_t pin, uint8_t val);
 uint8_t gpio_din(GPIO_TypeDef *port, uint8_t pin);

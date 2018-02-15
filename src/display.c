@@ -21,6 +21,17 @@
 
 // bbbbbggg gggrrrrr 
 
+// 00000000
+
+uint16_t dsp_color(uint8_t r, uint8_t g, uint8_t b)
+{
+	r &= 0x1F;
+	g &= 0x3F;
+	b &= 0x1F;
+	uint16_t c = (b << 11) | (g << 5) | r;
+	return c;
+}
+
 void dsp_write_data(uint8_t data)
 {
 	gpio_dout(LCD_D0, data & 0x01);
@@ -72,7 +83,20 @@ void dsp_init(void)
 	gpio_mode(LCD_D5, OUTPUT);
 	gpio_mode(LCD_D6, OUTPUT);
 	gpio_mode(LCD_D7, OUTPUT);
-	gpio_dout(LCD_CS, 1);
+	gpio_speed(LCD_CS, LOW);
+	gpio_speed(LCD_RS, LOW);
+	gpio_speed(LCD_RD, LOW);
+	gpio_speed(LCD_WR, LOW);
+	gpio_speed(LCD_RST, LOW);
+	gpio_speed(LCD_D0, LOW);
+	gpio_speed(LCD_D1, LOW);
+	gpio_speed(LCD_D2, LOW);
+	gpio_speed(LCD_D3, LOW);
+	gpio_speed(LCD_D4, LOW);
+	gpio_speed(LCD_D5, LOW);
+	gpio_speed(LCD_D6, LOW);
+	gpio_speed(LCD_D7, LOW);
+	gpio_dout(LCD_CS, 0);
 	gpio_dout(LCD_RS, 1);
 	gpio_dout(LCD_RD, 1);
 	gpio_dout(LCD_WR, 1);
@@ -120,15 +144,24 @@ void dsp_init(void)
 	dsp_write_data(0x11);
 	dsp_write_cmd(0xC5); // frame rate/inversion ctl
 	dsp_write_data(0x03);
+
+	// backlight
+	dsp_write_cmd(0x55);
+	dsp_write_data(0x01);
+	dsp_write_cmd(0x53);
+	dsp_write_data(0x2C);
+	dsp_write_cmd(0x51);
+	dsp_write_data(0x01);
+
 	dsp_write_cmd(0x36); // rot. and stuff
 	dsp_write_data(0x41);
 	dsp_write_cmd(0x3A); // set pixel format
-	dsp_write_data(0x55);
+	dsp_write_data(0x65);
 	dsp_write_cmd(0x11);
 	delay(150);
 	dsp_write_cmd(0x29); // set display on
 	delay(500);
-	dsp_write_cmd(0x33); // set scroll area
+	/*dsp_write_cmd(0x33); // set scroll area
 	dsp_write_data(0x00);
 	dsp_write_data(0x00);
 	dsp_write_data(LCD_HEIGHT >> 8);
@@ -137,7 +170,7 @@ void dsp_init(void)
 	dsp_write_data(0x00);
 	dsp_write_cmd(0x37);
 	dsp_write_data(0x00);
-	dsp_write_data(0x00);
+	dsp_write_data(0x00);*/
 
 	dsp_set_addr(0, 0, LCD_WIDTH, LCD_HEIGHT);
 }
