@@ -24,7 +24,7 @@ void SVC_Handler(void) {
 		gpio_dout(GPIOA, 6, 0);
 		break;
 	case 2:
-		lcd_put((char *)stack[0]);
+	//	lcd_put((char *)stack[0]);
 		break;
 	default:
 		break;

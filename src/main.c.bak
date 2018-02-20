@@ -10,11 +10,12 @@
 #include <serial.h>
 #include <parser.h>
 #include <stack.h>
+
+#include <stdlib.h>
 #include <string.h>
 
-extern char *itoa(int, char *, int);
-
 void kmain(void);
+void task_interpreter(void);
 
 int main(void)
 {
@@ -26,8 +27,6 @@ int main(void)
 
 	//MPU->CTRL |= MPU_CTRL_ENABLE_Msk | MPU_CTRL_PRIVDEFENA_Msk;
 	clock_init();
-	extern uint8_t _ebss;
-	heap_init(&_ebss);
 	gpio_init();
 
 	gpio_mode(GPIOA, 5, OUTPUT);
@@ -173,10 +172,26 @@ void kmain(void)
 	asm("cpsie i");
 
 	dsp_init();
+
+	//dsp_rect(0, 0, 40, 40, dsp_color(0x7F, 0, 0x7F));
+
+	//dsp_set_addr_read(0, 0, 39, 39);
+	//dsp_dmode(INPUT);
+	//uint8_t *buf = (uint8_t *)malloc(40 * 40 * 2);
+	//for (int i = 0; i < 180; i++)
+	//	buf[i] = dsp_read_data();
+	//dsp_dmode(OUTPUT);
+	//dsp_set_addr(40, 40, 79, 79);
+	//for (int i = 0; i < 320; i++)
+	//	dsp_write_data(buf[i]);
+	//dsp_rect(80, 80, 40, 40, dsp_color(0x7F, 0x7F, 0));
+
 	dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, dsp_color(0, 0, 0));
 	dsp_cursoron();
-	//dsp_puts("Hey.");
+
 	task_start(task_interpreter, 4096);
+
+	//char *s = initrd_getfile("test.txt");
 
 	while (1) {
 		gpio_dout(GPIOA, 5, 1);

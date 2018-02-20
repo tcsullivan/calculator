@@ -1,23 +1,22 @@
-func div9
-	if ((arg0 % 9) == 0)
-		ret 1
-	end
-	ret 0
-end
+print "Hello."
 
-set a 0
-set b 0
-do
-	set a (a + 1)
-	div9 a > b
-	if (b)
-		print a
-		print ", "
-	end
-	delay 1
-while (a < 100)
+set fg 32767
 
-if (a == 100)
-	print " All good!"
-end
+# draw bg, lines
+rect 50 50 380 220 6375
+line 50 160 430 160 fg
+line 240 50 240 270 fg
 
+set x 50
+#do
+#	delay 10
+#	line x 170 x 150 fg
+#	set x (x + 20)
+#while (x < 430)
+
+#set y 50
+#do
+#	delay 10
+#	line 230 y 250 y fg
+#	set y (y + 20)
+#while (y < 270)

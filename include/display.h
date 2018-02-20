@@ -9,9 +9,15 @@
 #define COLOR_MAX 31
 
 uint16_t dsp_color(uint8_t r, uint8_t g, uint8_t b);
+
+void dsp_dmode(int mode);
 void dsp_write_cmd(uint8_t data);
 void dsp_write_data(uint8_t data);
+uint8_t dsp_read_data(void);
+
 void dsp_set_addr(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+void dsp_set_addr_read(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+
 void dsp_init(void);
 
 #endif // DISPLAY_H_

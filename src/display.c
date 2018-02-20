@@ -19,10 +19,24 @@
 #define LCD_D6  GPIO_PORT(B, 10)
 #define LCD_D7  GPIO_PORT(A, 8)
 
+void dsp_dmode(int mode)
+{
+	static int old = 0;
+
+	if (mode != old) {
+		gpio_mode(LCD_D0, mode);
+		gpio_mode(LCD_D1, mode);
+		gpio_mode(LCD_D2, mode);
+		gpio_mode(LCD_D3, mode);
+		gpio_mode(LCD_D4, mode);
+		gpio_mode(LCD_D5, mode);
+		gpio_mode(LCD_D6, mode);
+		gpio_mode(LCD_D7, mode);
+		old = mode;
+	}
+}
+
 // bbbbbggg gggrrrrr 
-
-// 00000000
-
 uint16_t dsp_color(uint8_t r, uint8_t g, uint8_t b)
 {
 	r &= 0x1F;
@@ -46,6 +60,22 @@ void dsp_write_data(uint8_t data)
 	gpio_dout(LCD_WR, 1);
 }
 
+uint8_t dsp_read_data(void)
+{
+	uint8_t ret = 0;
+	gpio_dout(LCD_RD, 0);
+	ret |= gpio_din(LCD_D0);
+	ret |= gpio_din(LCD_D1) << 1;
+	ret |= gpio_din(LCD_D2) << 2;
+	ret |= gpio_din(LCD_D3) << 3;
+	ret |= gpio_din(LCD_D4) << 4;
+	ret |= gpio_din(LCD_D5) << 5;
+	ret |= gpio_din(LCD_D6) << 6;
+	ret |= gpio_din(LCD_D7) << 7;
+	gpio_dout(LCD_RD, 1);
+	return ret;
+}
+
 void dsp_write_cmd(uint8_t data)
 {
 	gpio_dout(LCD_RS, 0);
@@ -53,7 +83,7 @@ void dsp_write_cmd(uint8_t data)
 	gpio_dout(LCD_RS, 1);
 }
 
-void dsp_set_addr(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+void dsp_set_addr_base(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
 	dsp_write_cmd(0x2A);
 	dsp_write_data(x1 >> 8);
@@ -65,7 +95,18 @@ void dsp_set_addr(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 	dsp_write_data(y1 & 0xFF);
 	dsp_write_data(y2 >> 8);
 	dsp_write_data(y2 & 0xFF);
+}
+
+void dsp_set_addr(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+{
+	dsp_set_addr_base(x1, y1, x2, y2);
 	dsp_write_cmd(0x2C); // begin writing
+}
+
+void dsp_set_addr_read(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+{
+	dsp_set_addr_base(x1, y1, x2, y2);
+	dsp_write_cmd(0x2E); // begin reading
 }
 
 void dsp_init(void)
@@ -75,14 +116,7 @@ void dsp_init(void)
 	gpio_mode(LCD_RD, OUTPUT);
 	gpio_mode(LCD_WR, OUTPUT);
 	gpio_mode(LCD_RST, OUTPUT);
-	gpio_mode(LCD_D0, OUTPUT);
-	gpio_mode(LCD_D1, OUTPUT);
-	gpio_mode(LCD_D2, OUTPUT);
-	gpio_mode(LCD_D3, OUTPUT);
-	gpio_mode(LCD_D4, OUTPUT);
-	gpio_mode(LCD_D5, OUTPUT);
-	gpio_mode(LCD_D6, OUTPUT);
-	gpio_mode(LCD_D7, OUTPUT);
+	dsp_dmode(OUTPUT);
 	gpio_speed(LCD_CS, LOW);
 	gpio_speed(LCD_RS, LOW);
 	gpio_speed(LCD_RD, LOW);

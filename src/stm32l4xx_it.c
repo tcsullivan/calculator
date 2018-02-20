@@ -3,7 +3,7 @@
 
 void perror(const char *s)
 {
-	lcd_puts(s);
+	(void)s;//lcd_puts(s);
 }
 
 void NMI_Handler(void) {}

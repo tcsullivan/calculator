@@ -1,5 +1,5 @@
 #include <task.h>
-#include <stdlib.h>
+#include <heap.h>
 #include <stm32l476xx.h>
 
 typedef struct {

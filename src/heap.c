@@ -1,54 +1,56 @@
-#include <heap.h>
-#include <stm32l476xx.h>
+#include "heap.h"
 
-#define HEAP_SIZE (64 * 1024)
+#define HEAP_ALIGN 16
 
-uint8_t heap[HEAP_SIZE];
+typedef struct {
+	uint32_t next;
+	uint32_t size;
+} __attribute__ ((packed)) alloc_t;
 
-void *_sbrk(int inc)
+static alloc_t root;
+static void *heap_end;
+
+void heap_init(void *buf)
 {
-	static uint8_t *hend;
-	uint8_t *prev;
-
-	if (hend == 0)
-		hend = heap;
-
-	prev = hend;
-	hend += inc;
-
-	return prev;
+	heap_end = buf;
+	root.next = 1;
+	root.size = 0;
+	// what to do...
 }
 
-//void heap_init(void)
-//{
-	// what to do...
-//}
-
-//uint32_t heap_available(void)
-//{
-//	return HEAP_SIZE - offset;
-//}
-
-/*void *malloc(uint32_t size)
+void *malloc(uint32_t size)
 {
-	void *alloc = &heap[offset];
-	offset += size;
-	return alloc;
+	alloc_t *node = &root;
+	while (node->next & 1 || node->size < size) {
+		if ((node->next & ~(1)) == 0) {
+			node->next |= (uint32_t)(heap_end + HEAP_ALIGN) & ~(HEAP_ALIGN - 1);
+			heap_end += 2 * HEAP_ALIGN + size;
+			node = (void *)(node->next & ~(1));
+			node->next = 0;
+			node->size = size;
+			break;
+		}
+		node = (void *)(node->next & ~(1));
+	}
+
+	node->next |= 1;
+
+	return (void *)((uint32_t)node + sizeof(alloc_t));
 }
 
 void *calloc(uint32_t count, uint32_t size)
 {
-	//uint32_t total = count * size;
-	//void *alloc = hmalloc(total);
-	//for (uint32_t i = 0; i < total; i++)
-	//	((uint8_t *)alloc)[i] = 0;
-	//return alloc;
-
-	// calloc broke
-	return malloc(count * size);
+	uint8_t *buf = malloc(count * size);
+	for (uint8_t i = 0; i < count * size; i++)
+		buf[i] = 0;
+	return buf;
 }
 
-void free(void *ptr)
+void free(void *buf)
 {
-	(void)ptr;
-}*/
+	if (buf == 0)
+		return;
+	alloc_t *alloc = (alloc_t *)((uint32_t)buf - sizeof(alloc_t));
+	alloc->next &= ~(1);
+}
+

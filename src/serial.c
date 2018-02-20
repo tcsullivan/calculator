@@ -35,8 +35,6 @@ void serial_gets(char *buf, int max)
 	do {
 		buf[index] = serial_get();
 		serial_put(buf[index]);
-	} while (index++ < max && buf[index] != '\r');
-
-	buf[index - 1] = '\0';
-	//return buf;
+	} while (buf[index] != '\r' && index++ < max);
+	buf[index] = '\0';
 }
