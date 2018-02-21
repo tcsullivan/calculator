@@ -9,6 +9,7 @@
 #include <initrd.h>
 #include <serial.h>
 #include <parser.h>
+#include <builtins.h>
 #include <stack.h>
 #include <string.h>
 
@@ -100,6 +101,32 @@ int script_ppos(interpreter *it)
 	return 0;
 }
 
+int script_color(interpreter *it)
+{
+	uint16_t c = dsp_color(igetarg_integer(it, 0), igetarg_integer(it, 1),
+		igetarg_integer(it, 2));
+	variable v;
+	v.valtype = INTEGER;
+	v.value = c;
+	v.svalue = 0;
+	isetstr(&v);
+	iret(it, &v);
+	return 0;
+}
+
+int script_rand(interpreter *it)
+{
+	static uint32_t next = 1;
+	next = (next * 182 + 1829) % igetarg_integer(it, 0);
+	variable v;
+	v.valtype = INTEGER;
+	v.value = next;
+	v.svalue = 0;
+	isetstr(&v);
+	iret(it, &v);
+	return 0;
+}
+
 void task_interpreter(void)
 {
 	interpreter it;
@@ -110,6 +137,8 @@ void task_interpreter(void)
 	inew_cfunc(&it, "rect", script_rect);
 	inew_cfunc(&it, "ppos", script_ppos);
 	inew_cfunc(&it, "line", script_line);
+	inew_cfunc(&it, "color", script_color);
+	inew_cfunc(&it, "rand", script_rand);
 
 	/*int ret = 0;
 	char *linebuf = malloc(100), c[2] = {0, 0};
@@ -134,8 +163,10 @@ void task_interpreter(void)
 	}*/
 
 	char *s = initrd_getfile("init");
-	if (s == 0)
+	if (s == 0) {
+		dsp_puts("init not found");
 		goto end;
+	}
 
 	char *linebuf = (char *)malloc(120);
 	uint32_t i = 0, prev = 0, lc;
@@ -150,7 +181,9 @@ void task_interpreter(void)
 		}
 		strncpy(linebuf, s + prev, lc + 1);
 		linebuf[lc] = '\0';
+		//task_hold(1);
 		ret = idoline(&it, linebuf);
+		//task_hold(0);
 		if (ret < 0)
 			break;
 		prev = ++i;
@@ -171,7 +204,6 @@ end:
 void kmain(void)
 {
 	asm("cpsie i");
-
 	dsp_init();
 	dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, dsp_color(0, 0, 0));
 	dsp_cursoron();

@@ -1,4 +1,5 @@
-#include "heap.h"
+#include <heap.h>
+#include <task.h>
 
 #define HEAP_ALIGN 16
 
@@ -20,6 +21,9 @@ void heap_init(void *buf)
 
 void *malloc(uint32_t size)
 {
+	task_hold(1);
+	if (size < 16)
+		size = 16;
 	alloc_t *node = &root;
 	while (node->next & 1 || node->size < size) {
 		if ((node->next & ~(1)) == 0) {
@@ -34,6 +38,7 @@ void *malloc(uint32_t size)
 	}
 
 	node->next |= 1;
+	task_hold(0);
 
 	return (void *)((uint32_t)node + sizeof(alloc_t));
 }
@@ -53,4 +58,3 @@ void free(void *buf)
 	alloc_t *alloc = (alloc_t *)((uint32_t)buf - sizeof(alloc_t));
 	alloc->next &= ~(1);
 }
-
