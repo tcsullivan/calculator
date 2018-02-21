@@ -4,8 +4,8 @@
 #include <clock.h>
 
 volatile uint8_t lock = 0;
-#define LOCK while (lock) { delay(5); } lock = 1
-#define UNLOCK lock = 0
+#define LOCK while (lock) { delay(5); } task_hold(1); lock = 1
+#define UNLOCK task_hold(0); lock = 0
 
 static unsigned int curx = 0;
 static unsigned int cury = 0;

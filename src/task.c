@@ -16,6 +16,11 @@ static volatile int next_idx = 0;
 
 static uint8_t task_enable = 0;
 
+void task_hold(uint8_t hold)
+{
+	task_enable = !hold;
+}
+
 void task_init(void (*init)(void))
 {
 	for (int i = 0; i < MAX_TASKS; i++)

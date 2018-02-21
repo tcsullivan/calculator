@@ -8,15 +8,15 @@ line 50 160 430 160 fg
 line 240 50 240 270 fg
 
 set x 50
-#do
-#	delay 10
-#	line x 170 x 150 fg
-#	set x (x + 20)
-#while (x < 430)
+do
+	line x 170 x 150 fg
+	set x (x + 20)
+while (x < 430)
 
-#set y 50
-#do
-#	delay 10
-#	line 230 y 250 y fg
-#	set y (y + 20)
-#while (y < 270)
+set y 50
+do
+	line 230 y 250 y fg
+	set y (y + 20)
+while (y < 270)
+
+line 80 250 380 90 511
