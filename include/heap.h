@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 void heap_init(void *buf);
+uint32_t heap_used(void);
 
 void *malloc(uint32_t size);
 void *calloc(uint32_t count, uint32_t size);

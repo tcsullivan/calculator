@@ -107,7 +107,7 @@ int script_color(interpreter *it)
 		igetarg_integer(it, 2));
 	variable v;
 	v.valtype = INTEGER;
-	v.value = c;
+	INT(&v) = c;
 	v.svalue = 0;
 	isetstr(&v);
 	iret(it, &v);
@@ -120,7 +120,7 @@ int script_rand(interpreter *it)
 	next = (next * 182 + 1829) % igetarg_integer(it, 0);
 	variable v;
 	v.valtype = INTEGER;
-	v.value = next;
+	INT(&v) = next;
 	v.svalue = 0;
 	isetstr(&v);
 	iret(it, &v);

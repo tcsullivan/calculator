@@ -19,16 +19,27 @@ void heap_init(void *buf)
 	// what to do...
 }
 
+uint32_t heap_used(void)
+{
+	uint32_t total = 0;
+	alloc_t *a = &root;
+	while (a->next > 1) {
+		total += a->size;
+		a = (void *)(a->next & ~(1));
+	}
+	return total;
+}
+
 void *malloc(uint32_t size)
 {
 	task_hold(1);
-	if (size < 16)
-		size = 16;
+	if (size < HEAP_ALIGN)
+		size = HEAP_ALIGN;
 	alloc_t *node = &root;
 	while (node->next & 1 || node->size < size) {
 		if ((node->next & ~(1)) == 0) {
 			node->next |= (uint32_t)(heap_end + HEAP_ALIGN) & ~(HEAP_ALIGN - 1);
-			heap_end += 2 * HEAP_ALIGN + size;
+			heap_end += HEAP_ALIGN + size;
 			node = (void *)(node->next & ~(1));
 			node->next = 0;
 			node->size = size;
@@ -46,7 +57,7 @@ void *malloc(uint32_t size)
 void *calloc(uint32_t count, uint32_t size)
 {
 	uint8_t *buf = malloc(count * size);
-	for (uint8_t i = 0; i < count * size; i++)
+	for (uint32_t i = 0; i < count * size; i++)
 		buf[i] = 0;
 	return buf;
 }

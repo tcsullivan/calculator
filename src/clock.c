@@ -54,7 +54,7 @@ void SysTick_Handler(void)
 	// just keep counting
 	ticks++;
 
-	if (!(ticks % 10))
+	if (!(ticks % 4))
 		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 
 	asm("mov lr, %0; bx lr" :: "r" (lr));

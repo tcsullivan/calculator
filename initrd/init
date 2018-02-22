@@ -19,5 +19,15 @@ do
 	set y (y + 20)
 while (y < 270)
 
-line 80 250 380 90 511
+#line 80 250 380 90 511
+set purple 511
+do
+	rand 219 > x
+	rand 379 > y
+	rand 219 > i
+	rand 379 > j
 
+	line (x + 50) (y + 50) (i + 50) (j + 50) purple
+	delay 1000
+	set purple (purple + 11)
+while (1)

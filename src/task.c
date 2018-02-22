@@ -54,7 +54,6 @@ void task_init(void (*init)(void))
 
 	task_disable = 0;
 	init();
-	// you dirty dirty dog
 	/*asm("\
 		cpsie i; \
 		mov pc, %0; \
@@ -65,9 +64,8 @@ void task_start(void (*task)(void), uint16_t stackSize)
 {
 	task_hold(1);
 	task_t *t = task_create(task, stackSize);
-	task_t *next = (task_t *)current->next;
+	t->next = current->next;
 	current->next = t;
-	t->next = next;
 	task_hold(0);
 }
 
@@ -96,12 +94,8 @@ void PendSV_Handler(void)
 		msr psp, r0; \
 		isb; \
 		dsb; \
-	" :: "r" (current->sp));
-
-	// end
-	asm("\
 		cpsie i; \
 		bx lr; \
-	");
+	" :: "r" (current->sp));
 }
 
