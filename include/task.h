@@ -8,6 +8,12 @@
 
 #include <stdint.h>
 
+typedef struct {
+	void *next;
+	uint32_t *stack;
+	uint32_t *sp;
+} task_t;
+
 /**
  * Enters multitasking mode. The given function acts as the initial thread.
  * This task is given a 4kb stack.

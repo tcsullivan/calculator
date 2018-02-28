@@ -33,6 +33,7 @@ void dsp_cursoron(void)
 
 void dsp_putchar(int c)
 {
+	LOCK;
 	if (c == '\n') {
 		curx = 0;
 		if (++cury == 12) {
@@ -65,15 +66,14 @@ void dsp_putchar(int c)
 			cury = 0;
 		}
 	}
+	UNLOCK;
 }
 
 void dsp_puts(const char *s)
 {
 	unsigned int i = 0;
-	LOCK;
 	while (s[i])
 		dsp_putchar(s[i++]);
-	UNLOCK;
 }
 
 void dsp_cpos(int x, int y)
@@ -90,14 +90,14 @@ void dsp_coff(int x, int y)
 
 void dsp_rect(int x, int y, int w, int h, uint16_t color)
 {
-	LOCK;
 	dsp_set_addr(x, y, x + w - 1, y + h - 1);
 	int countdown = w * h;
 	do {
+		LOCK;
 		dsp_write_data(color >> 8);
 		dsp_write_data(color & 0xFF);
+		UNLOCK;
 	} while (countdown--);
-	UNLOCK;
 }
 
 void dsp_line(int x, int y, int i, int j, uint16_t color)
@@ -114,11 +114,12 @@ void dsp_line(int x, int y, int i, int j, uint16_t color)
 	int err = (dx > dy ? dx : -dy) / 2;
 	int e2;
 
-	LOCK;
 	while (1) {
+		LOCK;
 		dsp_set_addr(x, y, x, y);
 		dsp_write_data(color >> 8);
 		dsp_write_data(color & 0xFF);
+		UNLOCK;
 		if (x == i && y == j)
 			break;
 		e2 = err;
@@ -131,6 +132,5 @@ void dsp_line(int x, int y, int i, int j, uint16_t color)
 			y += sy;
 		}
 	}
-	UNLOCK;
 }
 

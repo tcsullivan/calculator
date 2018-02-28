@@ -22,8 +22,8 @@ void clock_init(void)
 	RCC->PLLCFGR |= RCC_PLLCFGR_PLLSRC_HSI;
 	RCC->PLLCFGR &= ~(RCC_PLLCFGR_PLLN | RCC_PLLCFGR_PLLM);
 	RCC->PLLCFGR |= 10 << RCC_PLLCFGR_PLLN_Pos;
-	RCC->PLLCFGR &= ~(RCC_PLLCFGR_PLLR);	// /2
-	RCC->PLLCFGR |= RCC_PLLCFGR_PLLREN;		// PLLR on
+	RCC->PLLCFGR &= ~(RCC_PLLCFGR_PLLR | RCC_PLLCFGR_PLLQ); // /2
+	RCC->PLLCFGR |= RCC_PLLCFGR_PLLREN | RCC_PLLCFGR_PLLQEN;
 
 	// start PLL
 	RCC->CR |= RCC_CR_PLLON;
@@ -54,7 +54,7 @@ void SysTick_Handler(void)
 	// just keep counting
 	ticks++;
 
-	if (!(ticks % 4))
+	if (!(ticks & 3))
 		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 
 	asm("mov lr, %0; bx lr" :: "r" (lr));

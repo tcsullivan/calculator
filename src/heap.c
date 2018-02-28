@@ -4,54 +4,52 @@
 #define HEAP_ALIGN 16
 
 typedef struct {
-	uint32_t next;
 	uint32_t size;
+	void *next;
 } __attribute__ ((packed)) alloc_t;
 
-static alloc_t root;
+static alloc_t *free_blocks;
 static void *heap_end;
+static uint32_t heap_used;
 
 void heap_init(void *buf)
 {
 	heap_end = buf;
-	root.next = 1;
-	root.size = 0;
-	// what to do...
-}
-
-uint32_t heap_used(void)
-{
-	uint32_t total = 0;
-	alloc_t *a = &root;
-	while (a->next > 1) {
-		total += a->size;
-		a = (void *)(a->next & ~(1));
-	}
-	return total;
+	free_blocks = 0;
+	heap_used = 0;
 }
 
 void *malloc(uint32_t size)
 {
-	task_hold(1);
-	if (size < HEAP_ALIGN)
-		size = HEAP_ALIGN;
-	alloc_t *node = &root;
-	while (node->next & 1 || node->size < size) {
-		if ((node->next & ~(1)) == 0) {
-			node->next |= (uint32_t)(heap_end + HEAP_ALIGN) & ~(HEAP_ALIGN - 1);
-			heap_end += HEAP_ALIGN + size;
-			node = (void *)(node->next & ~(1));
+	//task_hold(1);
+	size = (size + sizeof(alloc_t) + HEAP_ALIGN) & ~(HEAP_ALIGN - 1);
+
+	alloc_t *node = free_blocks;
+	alloc_t *prev = 0;
+	while (node != 0) {
+		if (node->size >= size) {
+			if (prev != 0)
+				prev->next = node->next;
+			else
+				free_blocks = node->next;
 			node->next = 0;
-			node->size = size;
-			break;
+			heap_used += node->size;
+			return (void *)((uint8_t *)node + sizeof(alloc_t));
 		}
-		node = (void *)(node->next & ~(1));
+
+		prev = node;
+		node = node->next;
 	}
 
-	node->next |= 1;
-	task_hold(0);
+	node = (alloc_t *)heap_end;
+	node->size = size;
+	node->next = 0;
 
-	return (void *)((uint32_t)node + sizeof(alloc_t));
+	heap_end = (void *)((uint8_t *)heap_end + size);
+	heap_used += size;
+
+	//task_hold(0);
+	return (void *)((uint8_t *)node + sizeof(alloc_t)); 
 }
 
 void *calloc(uint32_t count, uint32_t size)
@@ -66,6 +64,9 @@ void free(void *buf)
 {
 	if (buf == 0)
 		return;
-	alloc_t *alloc = (alloc_t *)((uint32_t)buf - sizeof(alloc_t));
-	alloc->next &= ~(1);
+
+	alloc_t *alloc = (alloc_t *)((uint8_t *)buf - sizeof(alloc_t));
+	heap_used -= alloc->size;
+	alloc->next = free_blocks;
+	free_blocks = alloc;
 }

@@ -53,7 +53,7 @@ uint32_t initrd_getsize(initrd_file *file)
 
 initrd_file *initrd_getfileptr(const char *name)
 {
-	initrd_file *file = (initrd_file *)(initrd_start + sizeof(initrd_header));
+	initrd_file *file = (initrd_file *)((uint8_t *)initrd_start + sizeof(initrd_header));
 	uint32_t offset = sizeof(initrd_header);
 
 	while (offset < initrd_size) {
@@ -74,7 +74,7 @@ char *initrd_getfile(const char *name)
 		return 0;
 
 
-	char *ptr = (char *)((void *)file + sizeof(initrd_file));
+	char *ptr = (char *)file + sizeof(initrd_file);
 	ptr[initrd_getsize(file) - 1] = 0;
 	return ptr;
 }

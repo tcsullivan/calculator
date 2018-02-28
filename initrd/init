@@ -1,33 +1,12 @@
-print "Hello."
-
-set fg 32767
-
-# draw bg, lines
-rect 50 50 380 220 6375
-line 50 160 430 160 fg
-line 240 50 240 270 fg
-
-set x 50
 do
-	line x 170 x 150 fg
-	set x (x + 20)
-while (x < 430)
-
-set y 50
-do
-	line 230 y 250 y fg
-	set y (y + 20)
-while (y < 270)
-
-#line 80 250 380 90 511
-set purple 511
-do
-	rand 219 > x
-	rand 379 > y
-	rand 219 > i
-	rand 379 > j
-
-	line (x + 50) (y + 50) (i + 50) (j + 50) purple
-	delay 1000
-	set purple (purple + 11)
+	rand 479 > x
+	rand 319 > y
+	rand 479 > i
+	rand 319 > j
+	rand 32767 > purple
+		
+	line x y i j purple
 while (1)
+
+print "done"
+

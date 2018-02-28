@@ -6,9 +6,12 @@ OBJCOPY = objcopy
 
 MCUFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 AFLAGS = $(MCUFLAGS) 
-CFLAGS = $(MCUFLAGS) -Iinclude -Iinclude/it -fno-builtin -fsigned-char -ffreestanding -Wall -Werror -Wextra -Wno-discarded-qualifiers -ggdb
-LFLAGS = 
-OFLAGS = -O ihex
+CFLAGS = $(MCUFLAGS) -ggdb \
+	-Iinclude -Iinclude/it \
+	-fno-builtin -fsigned-char -ffreestanding \
+	-Wall -Werror -Wextra -pedantic \
+	-Wno-overlength-strings -Wno-discarded-qualifiers
+LFLAGS = -T link.ld
 
 CFILES = $(wildcard src/*.c)
 AFILES = $(wildcard src/*.s) 
@@ -17,16 +20,15 @@ OUTDIR = out
 OFILES = $(patsubst src/%.c, $(OUTDIR)/%.o, $(CFILES)) \
 	 $(patsubst src/%.s, $(OUTDIR)/%.asm.o, $(AFILES))
 
-HEX = main.hex
+OUT = out/main.elf
 
-all: $(HEX)
+all: $(OUT)
 
-$(HEX): $(OFILES) initrd/init
-	@echo "  LINK   " $(HEX)
+$(OUT): $(OFILES) initrd/init libinterp.a
+	@echo "  LINK   " $(OUT)
 	@./mkinitrd.sh
 	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm initrd.img out/initrd.img.o
-	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) -T link.ld out/*.o -o out/main.elf -L. -linterp
-	@$(CROSS)$(OBJCOPY) $(OFLAGS) out/main.elf $(HEX)
+	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) out/*.o -o $(OUT) -L. -linterp
 
 $(OUTDIR)/%.o: src/%.c
 	@echo "  CC     " $<
