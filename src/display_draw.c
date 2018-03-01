@@ -92,12 +92,12 @@ void dsp_rect(int x, int y, int w, int h, uint16_t color)
 {
 	dsp_set_addr(x, y, x + w - 1, y + h - 1);
 	int countdown = w * h;
+	LOCK;
 	do {
-		LOCK;
 		dsp_write_data(color >> 8);
 		dsp_write_data(color & 0xFF);
-		UNLOCK;
 	} while (countdown--);
+	UNLOCK;
 }
 
 void dsp_line(int x, int y, int i, int j, uint16_t color)

@@ -34,12 +34,6 @@ task_t *task_create(void (*code)(void), uint32_t stackSize)
 	t->sp[14] = 0xFFFFFFFD;
 	t->sp[15] = (uint32_t)code;
 	t->sp[16] = 0x01000000;
-
-	//void *sp = (uint8_t *)t->stack + stackSize - 64; // 16 words
-	//t->sp = (uint32_t *)sp;
-	//t->sp[13] = (uint32_t)task_exit;
-	//t->sp[14] = (uint32_t)code;
-	//t->sp[15] = 0x01000000;
 	return t;
 }
 
@@ -53,7 +47,8 @@ void task_init(void (*init)(void))
 	asm("\
 		msr psp, %0; \
 		mrs r0, control; \
-		orr r0, r0, #2; \
+		orr r0, r0, #3; \
+		cpsie i; \
 		msr control, r0; \
 		isb; \
 		bx %1; \

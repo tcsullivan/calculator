@@ -12,6 +12,7 @@
 #include <string.h>
 #include <script.h>
 #include <random.h>
+#include <keypad.h>
 
 extern uint8_t _ebss;
 extern char *itoa(int, char *, int);
@@ -22,24 +23,27 @@ void task_interpreter(void);
 int main(void)
 {
 	asm("cpsid i");
-	// disable write buffer
-	*((uint32_t *)0xE000E008) |= 2;
 
 	// prepare flash latency for 80MHz operation
 	FLASH->ACR &= ~(FLASH_ACR_LATENCY);
 	FLASH->ACR |= FLASH_ACR_LATENCY_4WS;
 
-	//MPU->CTRL |= MPU_CTRL_ENABLE_Msk | MPU_CTRL_PRIVDEFENA_Msk;
 	clock_init();
 	heap_init(&_ebss);
 	gpio_init();
+	keypad_init();
 	serial_init();
 	random_init();
+
+	//extern void keypad_init(void);
+	//keypad_init();
 
 	gpio_mode(GPIOA, 5, OUTPUT);
 
 	// enable FPU
 	SCB->CPACR |= (0xF << 20);
+	// enable MPU
+	//MPU->CTRL |= MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_ENABLE_Msk;
 
 	task_init(kmain);
 	while (1);
@@ -47,17 +51,18 @@ int main(void)
 
 void kmain(void)
 {
-	asm("cpsie i");
 	dsp_init();
 	dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, dsp_color(0, 0, 0));
 	dsp_cursoron();
 	task_start(task_interpreter, 4096);
 
 	while (1) {
-		gpio_dout(GPIOA, 5, 1);
+		gpio_dout(GPIOA, 5,
+			(keypad_isdown(K0)));
+		/*gpio_dout(GPIOA, 5, 1);
 		delay(250);
 		gpio_dout(GPIOA, 5, 0);
-		delay(250);
+		delay(250);*/
 	}
 }
 

@@ -28,6 +28,12 @@ void task_init(void (*init)(void));
  */
 void task_start(void (*task)(void), uint16_t stackSize);
 
+/**
+ * Allows task switching to be disabled, for low-level actions.
+ * Multiple holds can be placed, and all must be removed to continue task
+ * switching.
+ * @param hold non-zero for hold, zero to remove hold
+ */
 void task_hold(uint8_t hold);
 
 #endif // TASK_H_

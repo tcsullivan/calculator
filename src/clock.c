@@ -7,7 +7,7 @@
 #define STK_CALIB	*((uint32_t *)0xE000E01C)
 
 // ticks since init
-static uint32_t ticks = 0;
+volatile uint32_t ticks = 0;
 
 void clock_init(void)
 {
@@ -31,6 +31,7 @@ void clock_init(void)
 
 	// set system clock to PLL
 	RCC->CFGR &= ~(RCC_CFGR_SW);
+	RCC->CFGR &= ~(RCC_CFGR_HPRE_Msk);
 	RCC->CFGR |= RCC_CFGR_SW_PLL;
 	while ((RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
 
@@ -45,18 +46,12 @@ void delay(uint32_t count)
 	while (ticks < target);
 }
 
-__attribute__ ((naked))
 void SysTick_Handler(void)
 {
-	uint32_t lr;
-	asm("mov %0, lr" : "=r" (lr));
-
 	// just keep counting
 	ticks++;
 
 	if (!(ticks & 3))
 		SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-
-	asm("mov lr, %0; bx lr" :: "r" (lr));
 }
 

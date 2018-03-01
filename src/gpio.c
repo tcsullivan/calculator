@@ -32,10 +32,7 @@ void gpio_mode(GPIO_TypeDef *port, uint8_t pin, uint8_t mode)
 
 void gpio_dout(GPIO_TypeDef *port, uint8_t pin, uint8_t val)
 {
-	if (val)
-		port->BSRR |= (1 << pin);
-	else
-		port->BRR |= (1 << pin);
+	port->BSRR |= (1 << (val ? pin : pin + 16));
 }
 
 uint8_t gpio_din(GPIO_TypeDef *port, uint8_t pin)

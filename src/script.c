@@ -8,6 +8,7 @@
 #include <random.h>
 #include <serial.h>
 #include <stack.h>
+#include <keypad.h>
 
 int script_puts(interpreter *it);
 int script_gets(interpreter *it);
@@ -17,6 +18,7 @@ int script_ppos(interpreter *it);
 int script_line(interpreter *it);
 int script_color(interpreter *it);
 int script_rand(interpreter *it);
+int script_getkey(interpreter *it);
 
 void script_loadlib(interpreter *it)
 {
@@ -28,6 +30,7 @@ void script_loadlib(interpreter *it)
 	inew_cfunc(it, "line", script_line);
 	inew_cfunc(it, "color", script_color);
 	inew_cfunc(it, "rand", script_rand);
+	inew_cfunc(it, "getkey", script_getkey);
 }
 
 int script_puts(interpreter *it)
@@ -111,6 +114,19 @@ int script_rand(interpreter *it)
 	unsigned int val = random_get();
 	v->valtype = INTEGER;
 	INT(v) = val % mod;
+	v->svalue = 0;
+	isetstr(v);
+	iret(it, v);
+	free(v->svalue);
+	free(v);
+	return 0;
+}
+
+int script_getkey(interpreter *it)
+{
+	variable *v = (variable *)malloc(sizeof(variable));
+	v->valtype = INTEGER;
+	INT(v) = keypad_get();
 	v->svalue = 0;
 	isetstr(v);
 	iret(it, v);

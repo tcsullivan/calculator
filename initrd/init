@@ -1,11 +1,14 @@
 do
-	rand 479 > x
-	rand 319 > y
-	rand 479 > i
-	rand 319 > j
-	rand 32767 > purple
+	getkey > input
+	if (input & 4)
+		rand 479 > x
+		rand 319 > y
+		rand 479 > i
+		rand 319 > j
+		rand 32767 > purple
 		
-	line x y i j purple
+		line x y i j purple
+	end
 while (1)
 
 print "done"
