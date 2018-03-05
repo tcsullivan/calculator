@@ -1,18 +1,18 @@
 #include <keypad.h>
 #include <gpio.h>
 
-#define PIN_0 GPIO_PORT(A, 11)
-#define PIN_1 GPIO_PORT(B, 13)
-#define PIN_2 GPIO_PORT(B, 2)
-#define PIN_3 GPIO_PORT(A, 12)
-#define PIN_4 GPIO_PORT(B, 14)
-#define PIN_5 GPIO_PORT(B, 11)
-#define PIN_6 GPIO_PORT(C, 5)
-#define PIN_7 GPIO_PORT(B, 15)
-#define PIN_8 GPIO_PORT(B, 12)
-#define PIN_9 GPIO_PORT(C, 6)
-#define PIN_S GPIO_PORT(B, 1)
-#define PIN_P GPIO_PORT(C, 8)
+#define PIN_0 GPIO_PORT(B, 2)
+#define PIN_1 GPIO_PORT(B, 1)
+#define PIN_2 GPIO_PORT(A, 11)
+#define PIN_3 GPIO_PORT(C, 8)
+#define PIN_4 GPIO_PORT(B, 15)
+#define PIN_5 GPIO_PORT(B, 12)
+#define PIN_6 GPIO_PORT(C, 6)
+#define PIN_7 GPIO_PORT(B, 14)
+#define PIN_8 GPIO_PORT(B, 11)
+#define PIN_9 GPIO_PORT(C, 5)
+#define PIN_S GPIO_PORT(B, 13)
+#define PIN_P GPIO_PORT(A, 12)
 
 typedef struct {
 	GPIO_TypeDef *port;
@@ -43,7 +43,7 @@ void keypad_init(void)
 		gpio_mode(p, pin, OUTPUT);
 		gpio_dout(p, pin, 0);
 		gpio_mode(p, pin, INPUT);
-		gpio_pupd(p, pin, PULLDOWN);
+		//gpio_pupd(p, pin, PULLDOWN);
 	}
 }
 

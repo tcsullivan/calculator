@@ -1,0 +1,33 @@
+print "Hello."
+
+set fg 32767
+
+# draw bg, lines
+rect 50 50 380 220 6375
+line 50 160 430 160 fg
+line 240 50 240 270 fg
+
+set x 50
+do
+	line x 170 x 150 fg
+	set x (x + 20)
+while (x < 431)
+
+set y 50
+do
+	line 230 y 250 y fg
+	set y (y + 20)
+while (y < 271)
+
+do
+	rand 379 > x
+	rand 219 > y
+	rand 379 > i
+	rand 219 > j
+	set x (x + 50)
+	set y (y + 50)
+	set i (i + 50)
+	set j (j + 50)
+
+	line x y i j 511
+while (1)

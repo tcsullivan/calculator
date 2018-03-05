@@ -23,6 +23,8 @@ void task_interpreter(void);
 int main(void)
 {
 	asm("cpsid i");
+	// disable cached writes for precise debug info
+	//*((uint32_t *)0xE000E008) |= 2;
 
 	// prepare flash latency for 80MHz operation
 	FLASH->ACR &= ~(FLASH_ACR_LATENCY);
@@ -59,6 +61,7 @@ void kmain(void)
 	while (1) {
 		gpio_dout(GPIOA, 5,
 			(keypad_isdown(K0)));
+		delay(10);
 		/*gpio_dout(GPIOA, 5, 1);
 		delay(250);
 		gpio_dout(GPIOA, 5, 0);
