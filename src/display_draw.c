@@ -100,6 +100,15 @@ void dsp_rect(int x, int y, int w, int h, uint16_t color)
 	UNLOCK;
 }
 
+void dsp_pixel(int x, int y, uint16_t color)
+{
+	LOCK;
+	dsp_set_addr(x, y, x, y);
+	dsp_write_data(color >> 8);
+	dsp_write_data(color & 0xFF);
+	UNLOCK;
+}
+
 void dsp_line(int x, int y, int i, int j, uint16_t color)
 {
 	int dx = i - x;
@@ -115,11 +124,7 @@ void dsp_line(int x, int y, int i, int j, uint16_t color)
 	int e2;
 
 	while (1) {
-		LOCK;
-		dsp_set_addr(x, y, x, y);
-		dsp_write_data(color >> 8);
-		dsp_write_data(color & 0xFF);
-		UNLOCK;
+		dsp_pixel(x, y, color);
 		if (x == i && y == j)
 			break;
 		e2 = err;

@@ -13,6 +13,7 @@
 #include <script.h>
 #include <random.h>
 #include <keypad.h>
+#include <flash.h>
 
 extern uint8_t _ebss;
 extern char *itoa(int, char *, int);
@@ -24,7 +25,7 @@ int main(void)
 {
 	asm("cpsid i");
 	// disable cached writes for precise debug info
-	//*((uint32_t *)0xE000E008) |= 2;
+	*((uint32_t *)0xE000E008) |= 2;
 
 	// prepare flash latency for 80MHz operation
 	FLASH->ACR &= ~(FLASH_ACR_LATENCY);
@@ -58,14 +59,24 @@ void kmain(void)
 	dsp_cursoron();
 	task_start(task_interpreter, 4096);
 
+	/*char buf[2];
+	flash_init();
+	buf[0] = 'A';
+	flash_write(buf, 0, 1);
+	buf[0] = 0;
+	flash_read(buf, 0x00000000, 1);
+	buf[0] += ' ';
+	buf[1] = '\0';
+	dsp_puts(buf);*/
+
 	while (1) {
-		gpio_dout(GPIOA, 5,
-			(keypad_isdown(K0)));
-		delay(10);
-		/*gpio_dout(GPIOA, 5, 1);
+		//gpio_dout(GPIOA, 5,
+		//	(keypad_isdown(K0)));
+		//delay(10);
+		gpio_dout(GPIOA, 5, 1);
 		delay(250);
 		gpio_dout(GPIOA, 5, 0);
-		delay(250);*/
+		delay(250);
 	}
 }
 
@@ -77,7 +88,7 @@ void task_interpreter(void)
 
 	char *s = initrd_getfile("init");
 	if (s == 0) {
-		dsp_puts("init not found");
+		dsp_puts("can't find init");
 		goto end;
 	}
 

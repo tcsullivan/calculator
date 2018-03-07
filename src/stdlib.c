@@ -40,6 +40,7 @@ char *snprintf(char *buf, unsigned int max, const char *format, ...)
 				break;
 			case 'f':
 				itoa((int)va_arg(args, double), nbuf, 10);
+				continue;
 				break;
 			default:
 				buf[off++] = format[i];
@@ -47,7 +48,7 @@ char *snprintf(char *buf, unsigned int max, const char *format, ...)
 				break;
 			}
 			if (nbuf[0] != '\0') {
-				for (unsigned int j = 0; off < max &&
+				for (unsigned int j = 0; off < max && j < 32 &&
 					nbuf[j] != '\0'; off++, j++)
 					buf[off] = nbuf[j];
 			}

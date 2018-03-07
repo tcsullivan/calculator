@@ -5,6 +5,7 @@
 
 void dsp_cursoron(void);
 
+void dsp_pixel(int x, int y, uint16_t color);
 void dsp_line(int x, int y, int i, int j, uint16_t color);
 void dsp_rect(int x, int y, int w, int h, uint16_t color);
 

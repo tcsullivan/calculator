@@ -1,0 +1,52 @@
+#include <stm32l476xx.h>
+#include <gpio.h>
+
+#define ADDR 0x20
+
+#define CONTROL 0x41
+#define ADDRESS 0x12
+
+void keypad_init(void)
+{
+	// clock init
+	RCC->CCIPR &= ~(RCC_CCIPR_I2C1SEL_Msk);
+	RCC->CCIPR |= 2 << RCC_CCIPR_I2C1SEL_Pos; 
+	RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
+
+	// set times
+	// PRESC, SCLDEL, SDADEL, SCLH, SCLL
+	I2C1->TIMINGR = (0 << 28) | (2 << 20) | (0 << 16) | (2 << 8) | 4;
+
+	// gpio init
+	gpio_mode(GPIOB, 8, ALTERNATE);
+	gpio_mode(GPIOB, 9, ALTERNATE);
+	GPIOB->AFR[1] &= ~(0xFF);
+	GPIOB->AFR[1] |= 0x44;
+
+	// go go go
+	I2C1->CR1 |= I2C_CR1_PE;
+
+	I2C1->CR2 |= ADDR << 1;
+	//I2C1->CR2 |= I2C_CR2_RD_WRN;
+	I2C1->CR2 &= ~(I2C_CR2_NBYTES);
+	I2C1->CR2 |= 1 << I2C_CR2_NBYTES_Pos;
+	I2C1->CR2 |= I2C_CR2_RELOAD;
+	I2C1->CR2 |= I2C_CR2_START;
+
+	while (!(I2C1->ISR & I2C_ISR_TXE));
+
+	I2C1->TXDR = ADDRESS;
+
+	while (I2C1->ISR & I2C_ISR_BUSY);
+
+	I2C1->ICR |= 0x30;
+	I2C1->CR2 |= I2C_CR2_RD_WRN;
+	I2C1->CR2 |= I2C_CR2_RELOAD;
+	I2C1->CR2 |= I2C_CR2_START;
+	
+	while (1) {
+		while (!(I2C1->ISR & I2C_ISR_RXNE));
+		uint32_t v = I2C1->RXDR;
+		(void)v;
+	}
+}

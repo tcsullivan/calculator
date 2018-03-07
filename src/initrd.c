@@ -61,7 +61,7 @@ initrd_file *initrd_getfileptr(const char *name)
 			return file;
 		uint32_t size = initrd_getsize(file) + sizeof(initrd_file);
 		offset += size;
-		file += size;
+		file = (initrd_file *)((uint8_t *)file + size + 1);
 	}
 
 	return 0;

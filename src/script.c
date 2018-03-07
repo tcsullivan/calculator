@@ -19,6 +19,7 @@ int script_line(interpreter *it);
 int script_color(interpreter *it);
 int script_rand(interpreter *it);
 int script_getkey(interpreter *it);
+int script_pixel(interpreter *it);
 
 void script_loadlib(interpreter *it)
 {
@@ -31,11 +32,12 @@ void script_loadlib(interpreter *it)
 	inew_cfunc(it, "color", script_color);
 	inew_cfunc(it, "rand", script_rand);
 	inew_cfunc(it, "getkey", script_getkey);
+	inew_cfunc(it, "pixel", script_pixel);
 }
 
 int script_puts(interpreter *it)
 {
-	char *s = igetarg_string(it, 0);
+	const char *s = igetarg_string(it, 0);
 	dsp_puts(s);
 	//dsp_puts("\n");
 	//asm("mov r0, %0; svc 2" :: "r" (s));
@@ -44,7 +46,8 @@ int script_puts(interpreter *it)
 
 int script_gets(interpreter *it)
 {
-	char *s = malloc(64), c[2] = {0, 0};
+	char *s = malloc(64);
+	char c[2] = {0, 0};
 	uint16_t index = 0;
 
 	do {
@@ -57,7 +60,7 @@ int script_gets(interpreter *it)
 
 	variable *v = igetarg(it, 0);
 	v->valtype = STRING;
-	v->svalue = s;
+	v->value.p = (uint32_t)s;
 	return 0;
 }
 
@@ -98,39 +101,33 @@ int script_color(interpreter *it)
 {
 	uint16_t c = dsp_color(igetarg_integer(it, 0), igetarg_integer(it, 1),
 		igetarg_integer(it, 2));
-	variable v;
-	v.valtype = INTEGER;
-	INT(&v) = c;
-	v.svalue = 0;
-	isetstr(&v);
-	iret(it, &v);
+	variable *v = make_varn(0, (float)c);
+	iret(it, v);
+	free(v);
 	return 0;
 }
 
 int script_rand(interpreter *it)
 {
-	variable *v = (variable *)malloc(sizeof(variable));
 	unsigned int mod = igetarg_integer(it, 0);
 	unsigned int val = random_get();
-	v->valtype = INTEGER;
-	INT(v) = val % mod;
-	v->svalue = 0;
-	isetstr(v);
+	variable *v = make_varn(0, (float)(mod % val));
 	iret(it, v);
-	free(v->svalue);
 	free(v);
 	return 0;
 }
 
 int script_getkey(interpreter *it)
 {
-	variable *v = (variable *)malloc(sizeof(variable));
-	v->valtype = INTEGER;
-	INT(v) = keypad_get();
-	v->svalue = 0;
-	isetstr(v);
+	variable *v = make_varn(0, (float)keypad_get());
 	iret(it, v);
-	free(v->svalue);
 	free(v);
+	return 0;
+}
+
+int script_pixel(interpreter *it)
+{
+	dsp_pixel(igetarg_integer(it, 0), igetarg_integer(it, 1),
+		igetarg_integer(it, 2));
 	return 0;
 }

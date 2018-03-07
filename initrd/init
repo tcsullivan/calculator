@@ -1,1 +1,37 @@
-print "Hello, world!"
+func Fx
+	ret (arg0 * arg0)
+end
+
+# graph area
+set plotx 0
+set ploty 0
+set plotw 479
+set ploth 319
+
+# graph range
+set xmin (0 - 10)
+set xmax 10
+set ymin (0 - 10)
+set ymax 10
+
+set xinc (plotw / (xmax - xmin))
+set yinc (ploth / (ymax - ymin))
+
+# print axis
+line 240 0 240 319 32767
+line 0 160 479 160 32767
+
+# do function
+set x xmin
+set cx (plotx + (plotw / 2))
+set cy (ploty + (ploth / 2))
+do
+	Fx x > y
+	set y (0 - y)
+	if ((y > ymin) & (y < ymax))
+		pixel (cx + (x * xinc)) (cy + (y * yinc)) 511
+	end
+	set x (x + (1 / xinc))
+while (x < xmax)
+
+print "Done."
