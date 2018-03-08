@@ -1,12 +1,10 @@
-func Fx
-	ret (arg0 * arg0)
-end
-
 # graph area
-set plotx 0
-set ploty 0
-set plotw 479
-set ploth 319
+set plotx 50
+set ploty 50
+set plotw 380
+set ploth 220
+set cx (plotx + (plotw / 2))
+set cy (ploty + (ploth / 2))
 
 # graph range
 set xmin (0 - 10)
@@ -17,21 +15,55 @@ set ymax 10
 set xinc (plotw / (xmax - xmin))
 set yinc (ploth / (ymax - ymin))
 
+color 3 3 3 > mlines
+
 # print axis
-line 240 0 240 319 32767
-line 0 160 479 160 32767
 
-# do function
-set x xmin
-set cx (plotx + (plotw / 2))
-set cy (ploty + (ploth / 2))
+func makegrid
+	rect plotx ploty plotw ploth 0
+
+	set x plotx
+	do
+		line x ploty x (ploty + ploth) mlines
+		set x (x + xinc)
+	while (x <= plotx + plotw)
+
+	set y ploty
+	do
+		line plotx y (plotx + plotw) y mlines
+		set y (y + yinc)
+	while (y <= ploty + ploth)
+
+	line cx ploty cx (ploty + ploth) 32767
+	line plotx cy (plotx + plotw) cy 32767
+end
+
+#
+# BIG LOOP - ask for equ, graph it
+#
+
+makegrid
+set clearcmd "clear"
 do
-	Fx x > y
-	set y (0 - y)
-	if ((y > ymin) & (y < ymax))
-		pixel (cx + (x * xinc)) (cy + (y * yinc)) 511
-	end
-	set x (x + (1 / xinc))
-while (x < xmax)
+	rect 0 0 480 40
 
-print "Done."
+	print "f(x) = "
+	gets > Fx
+
+	if (Fx == clearcmd)
+		makegrid
+	else
+		# do function
+		set x xmin
+		do
+			solve Fx > y
+			set y (0 - y)
+			if ((y > ymin) & (y < ymax))
+				pixel (cx + x * xinc) (cy + y * yinc) 511
+			end
+			set x (x + 1 / xinc)
+		while (x < xmax)
+	end
+
+	ppos 0 0
+while (1)

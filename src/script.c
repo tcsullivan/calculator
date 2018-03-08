@@ -10,6 +10,8 @@
 #include <stack.h>
 #include <keypad.h>
 
+#include <string.h>
+
 int script_puts(interpreter *it);
 int script_gets(interpreter *it);
 int script_delay(interpreter *it);
@@ -20,6 +22,7 @@ int script_color(interpreter *it);
 int script_rand(interpreter *it);
 int script_getkey(interpreter *it);
 int script_pixel(interpreter *it);
+int script_solve(interpreter *it);
 
 void script_loadlib(interpreter *it)
 {
@@ -33,14 +36,13 @@ void script_loadlib(interpreter *it)
 	inew_cfunc(it, "rand", script_rand);
 	inew_cfunc(it, "getkey", script_getkey);
 	inew_cfunc(it, "pixel", script_pixel);
+	inew_cfunc(it, "solve", script_solve);
 }
 
 int script_puts(interpreter *it)
 {
 	const char *s = igetarg_string(it, 0);
 	dsp_puts(s);
-	//dsp_puts("\n");
-	//asm("mov r0, %0; svc 2" :: "r" (s));
 	return 0;
 }
 
@@ -58,9 +60,10 @@ int script_gets(interpreter *it)
 	} while (s[index] != '\r' && index++ < 23);
 	s[index] = '\0';
 
-	variable *v = igetarg(it, 0);
-	v->valtype = STRING;
-	v->value.p = (uint32_t)s;
+	variable *r = make_vars(0, s);
+	iret(it, r);
+	free(s);
+	free(r);
 	return 0;
 }
 
@@ -129,5 +132,21 @@ int script_pixel(interpreter *it)
 {
 	dsp_pixel(igetarg_integer(it, 0), igetarg_integer(it, 1),
 		igetarg_integer(it, 2));
+	return 0;
+}
+
+int script_solve(interpreter *it)
+{
+	const char *expr = igetarg_string(it, 0);
+	int len = strlen(expr);
+	char *buf = (char *)malloc(len + 2);
+	strcpy(buf, expr);
+	buf[len] = ')';
+	buf[len + 1] = '\0';
+	variable *r = idoexpr(it, buf);
+	if (r == 0)
+		r = make_varn(0, 0.0f);
+	iret(it, r);
+	free(r);
 	return 0;
 }

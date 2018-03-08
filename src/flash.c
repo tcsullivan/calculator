@@ -35,7 +35,7 @@ void flash_init(void)
 	SPI2->CR2 |= SPI_CR2_FRXTH;
 	SPI2->CR1 |= SPI_CR1_SPE;
 
-	char buf[3];
+	char buf[4];
 	buf[0] = READ;
 	buf[1] = 0;
 	buf[2] = 0;
