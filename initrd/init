@@ -58,7 +58,7 @@ do
 		do
 			solve Fx > y
 			set y (0 - y)
-			if ((y > ymin) & (y < ymax))
+			if ((y >= ymin) & (y <= ymax))
 				pixel (cx + x * xinc) (cy + y * yinc) 511
 			end
 			set x (x + 1 / xinc)

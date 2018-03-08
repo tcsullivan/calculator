@@ -67,15 +67,49 @@ float strtof(const char *s, char **endptr)
 {
 	(void)s;
 	(void)endptr;
-	return 0.0f;
+
+	float res = 0.0f;
+	char neg = 0;
+	unsigned int i = 0;
+
+	if (s[0] == '-') {
+		neg = 1;
+		i++;
+	}
+
+	for (; isdigit(s[i]); i++) {
+		res *= 10.0f;
+		res += (s[i] - '0');
+	}
+
+	if (s[i] != '.')
+		goto end;
+
+	float div = 0.1f;
+	for (i++; isdigit(s[i]); i++) {
+		res += div * (s[i] - '0');
+		div /= 10.0f;
+	}
+
+end:
+	return (neg == 0) ? res : -res;
 }
 
 int atoi(const char *s)
 {
+	unsigned int i = 0;
+	char neg = 0;
 	int n = 0;
-	for (unsigned int i = 0; isdigit(s[i]); i++) {
+
+	if (s[0] == '-') {
+		neg = 1;
+		i = 1;
+	}
+
+	for (; isdigit(s[i]); i++) {
 		n *= 10;
 		n += s[i] - '0';
 	}
-	return n;
+
+	return (neg == 0) ? n : -n;
 }

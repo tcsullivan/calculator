@@ -12,12 +12,16 @@ void serial_puts(const char *s)
 
 void perror(const char *s)
 {
-	//extern task_t *current;
+	extern uint32_t heap_used;
 	serial_puts(s);
-	//char buf[200];
-	//snprintf(buf, 200, "xPSR: %x\r\nPC: %x\r\nLR: %x\r\n", current->sp[0],
-	//	current->sp[1], current->sp[2]);
-	//serial_puts(buf);
+
+	static char buf[200];
+	uint32_t *psp;
+	asm("mrs %0, psp" : "=r"(psp));
+
+	snprintf(buf, 200, "\r\nPC: %x\r\nLR: %x\r\nmemused: %db\r\n",
+		psp[6], psp[5], heap_used);
+	serial_puts(buf);
 }
 
 __attribute__ ((naked))

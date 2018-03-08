@@ -39,9 +39,14 @@ void dsp_putchar(int c)
 		if (++cury == 12) {
 			UNLOCK;
 			dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, 0);
-			LOCK;
 			cury = 0;
 		}
+		return;
+	} else if (c == '\b') {
+		if (curx > 0)
+			curx--;
+		UNLOCK;
+		dsp_rect(curxo + curx * 12, curyo + cury * 26, 12, 26, 0);
 		return;
 	}
 

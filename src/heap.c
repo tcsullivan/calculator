@@ -1,7 +1,6 @@
 #include <heap.h>
-#include <task.h>
 
-#define HEAP_ALIGN 16
+#define HEAP_ALIGN 4
 
 typedef struct {
 	uint32_t size;
@@ -10,7 +9,7 @@ typedef struct {
 
 static alloc_t *free_blocks;
 static void *heap_end;
-static uint32_t heap_used;
+uint32_t heap_used;
 
 void heap_init(void *buf)
 {
@@ -21,17 +20,29 @@ void heap_init(void *buf)
 
 void *malloc(uint32_t size)
 {
-	//task_hold(1);
 	size = (size + sizeof(alloc_t) + HEAP_ALIGN) & ~(HEAP_ALIGN - 1);
 
 	alloc_t *node = free_blocks;
 	alloc_t *prev = 0;
 	while (node != 0) {
 		if (node->size >= size) {
-			if (prev != 0)
-				prev->next = node->next;
-			else
-				free_blocks = node->next;
+			/*if (node->size > size + sizeof(alloc_t) + HEAP_ALIGN) {
+				alloc_t *rem = (alloc_t *)((uint8_t *)node +
+					sizeof(alloc_t) + size);
+				rem->size = node->size - size - sizeof(alloc_t);
+				rem->next = node->next;
+				if (prev != 0)
+					prev->next = rem;
+				else
+					free_blocks = rem;
+				node->size = size;
+			} else {*/
+				if (prev != 0)
+					prev->next = node->next;
+				else
+					free_blocks = node->next;
+			//}
+
 			node->next = 0;
 			heap_used += node->size;
 			return (void *)((uint8_t *)node + sizeof(alloc_t));
@@ -48,7 +59,6 @@ void *malloc(uint32_t size)
 	heap_end = (void *)((uint8_t *)heap_end + size);
 	heap_used += size;
 
-	//task_hold(0);
 	return (void *)((uint8_t *)node + sizeof(alloc_t)); 
 }
 

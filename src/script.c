@@ -22,7 +22,6 @@ int script_color(interpreter *it);
 int script_rand(interpreter *it);
 int script_getkey(interpreter *it);
 int script_pixel(interpreter *it);
-int script_solve(interpreter *it);
 
 void script_loadlib(interpreter *it)
 {
@@ -36,7 +35,6 @@ void script_loadlib(interpreter *it)
 	inew_cfunc(it, "rand", script_rand);
 	inew_cfunc(it, "getkey", script_getkey);
 	inew_cfunc(it, "pixel", script_pixel);
-	inew_cfunc(it, "solve", script_solve);
 }
 
 int script_puts(interpreter *it)
@@ -50,14 +48,21 @@ int script_gets(interpreter *it)
 {
 	char *s = malloc(64);
 	char c[2] = {0, 0};
-	uint16_t index = 0;
+	int index = 0;
 
 	do {
 		c[0] = serial_get();
 		s[index] = c[0];
-		if (c[0] != '\r')
+		if (c[0] == '\b' || c[0] == 127) {
+			index--;
+			if (index > -1) {
+				dsp_puts("\b");
+				index--;
+			}
+		} else if (c[0] != '\r') {
 			dsp_puts(c);
-	} while (s[index] != '\r' && index++ < 23);
+		}
+	} while (s[index] != '\r' && index++ < 63);
 	s[index] = '\0';
 
 	variable *r = make_vars(0, s);
@@ -135,18 +140,3 @@ int script_pixel(interpreter *it)
 	return 0;
 }
 
-int script_solve(interpreter *it)
-{
-	const char *expr = igetarg_string(it, 0);
-	int len = strlen(expr);
-	char *buf = (char *)malloc(len + 2);
-	strcpy(buf, expr);
-	buf[len] = ')';
-	buf[len + 1] = '\0';
-	variable *r = idoexpr(it, buf);
-	if (r == 0)
-		r = make_varn(0, 0.0f);
-	iret(it, r);
-	free(r);
-	return 0;
-}
