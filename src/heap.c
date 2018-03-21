@@ -76,6 +76,8 @@ void free(void *buf)
 		return;
 
 	alloc_t *alloc = (alloc_t *)((uint8_t *)buf - sizeof(alloc_t));
+	if (alloc->next != 0)
+		return;
 	heap_used -= alloc->size;
 	alloc->next = free_blocks;
 	free_blocks = alloc;

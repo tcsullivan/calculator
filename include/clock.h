@@ -10,7 +10,6 @@
 
 /**
  * Sets HCLK (system clock) to 80MHz, the maximum.
- * @param none
  */
 extern void clock_init(void);
 

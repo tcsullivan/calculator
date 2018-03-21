@@ -82,9 +82,8 @@ void kmain(void)
 
 void task_interpreter(void)
 {
-	interpreter it;
-	iinit(&it);
-	script_loadlib(&it);
+	instance *it = inewinstance();
+	script_loadlib(it);
 
 	char *s = initrd_getfile("init");
 	if (s == 0) {
@@ -105,7 +104,7 @@ void task_interpreter(void)
 		}
 		strncpy(linebuf, s + prev, lc + 1);
 		linebuf[lc] = '\0';
-		ret = idoline(&it, linebuf);
+		ret = idoline(it, linebuf);
 		if (ret < 0)
 			break;
 		prev = ++i;

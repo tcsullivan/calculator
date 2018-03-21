@@ -12,6 +12,6 @@
  * Loads the library for the given interpreter.
  * @param it the interpreter to use
  */
-void script_loadlib(interpreter *it);
+void script_loadlib(instance *it);
 
 #endif // SCRIPT_H_

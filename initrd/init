@@ -1,69 +1,67 @@
 # graph area
-set plotx 50
-set ploty 50
-set plotw 380
-set ploth 220
-set cx (plotx + (plotw / 2))
-set cy (ploty + (ploth / 2))
+plotx = 50
+ploty = 50
+plotw = 380
+ploth = 220
+cx = plotx + plotw / 2
+cy = ploty + ploth / 2
 
 # graph range
-set xmin (0 - 10)
-set xmax 10
-set ymin (0 - 10)
-set ymax 10
+xmin = 0 - 10
+xmax = 10
+ymin = 0 - 10
+ymax = 10
 
-set xinc (plotw / (xmax - xmin))
-set yinc (ploth / (ymax - ymin))
+xinc = plotw / (xmax - xmin)
+yinc = ploth / (ymax - ymin)
 
-color 3 3 3 > mlines
+mlines = color(3, 3, 3)
 
-# print axis
+func(makegrid) {
+	rect(plotx, ploty, plotw, ploth, 0)
 
-func makegrid
-	rect plotx ploty plotw ploth 0
+	x = plotx
+	while (x <= plotx + plotw) {
+		line(x, ploty, x, ploty + ploth, mlines)
+		x = x + xinc
+	}
 
-	set x plotx
-	do
-		line x ploty x (ploty + ploth) mlines
-		set x (x + xinc)
-	while (x <= plotx + plotw)
+	y = ploty
+	while (y <= ploty + ploth) {
+		line(plotx, y, plotx + plotw, y, mlines)
+		y = y + yinc
+	}
 
-	set y ploty
-	do
-		line plotx y (plotx + plotw) y mlines
-		set y (y + yinc)
-	while (y <= ploty + ploth)
-
-	line cx ploty cx (ploty + ploth) 32767
-	line plotx cy (plotx + plotw) cy 32767
-end
+	line(cx, ploty, cx, ploty + ploth, 32767)
+	line(plotx, cy, plotx + plotw, cy, 32767)
+}
 
 #
 # BIG LOOP - ask for equ, graph it
 #
 
-makegrid
-set clearcmd "clear"
-do
-	rect 0 0 480 40
+makegrid()
+clearcmd = "clear"
+while (1) {
+	rect(0, 0, 480, 40, 0)
+	print("f(x) = ")
+	Fx = gets()
 
-	print "f(x) = "
-	gets > Fx
-
-	if (Fx == clearcmd)
-		makegrid
-	else
+	if (Fx == clearcmd) {
+		makegrid()
+	} else {
 		# do function
-		set x xmin
-		do
-			solve Fx > y
-			set y (0 - y)
-			if ((y >= ymin) & (y <= ymax))
-				pixel (cx + x * xinc) (cy + y * yinc) 511
-			end
-			set x (x + 1 / xinc)
-		while (x < xmax)
-	end
+		x = xmin
+		while (x < xmax) {
+			y = solve(Fx)
+			y = 0 - y
+			if ((y >= ymin) & (y <= ymax)) {
+				pixel(cx + x * xinc, cy + y * yinc, 511)
+			}
+			x = x + 1 / xinc
+		}
+	}
 
-	ppos 0 0
-while (1)
+	ppos(0, 0)
+}
+
