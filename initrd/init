@@ -20,7 +20,7 @@ mlines = color(3, 3, 3)
 func(makegrid) {
 	rect(plotx, ploty, plotw, ploth, 0)
 
-	x = plotx
+	x = plotx 
 	while (x <= plotx + plotw) {
 		line(x, ploty, x, ploty + ploth, mlines)
 		x = x + xinc
@@ -40,7 +40,7 @@ func(makegrid) {
 # BIG LOOP - ask for equ, graph it
 #
 
-makegrid()
+makegrid
 clearcmd = "clear"
 while (1) {
 	rect(0, 0, 480, 40, 0)
@@ -48,7 +48,7 @@ while (1) {
 	Fx = gets()
 
 	if (Fx == clearcmd) {
-		makegrid()
+		makegrid
 	} else {
 		# do function
 		x = xmin

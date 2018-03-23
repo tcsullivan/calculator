@@ -118,7 +118,6 @@ int script_color(instance *it)
 		igetarg_integer(it, 2));
 	variable *v = make_varf(0, (float)c);
 	ipush(it, (uint32_t)v);
-	free(v);
 	return 0;
 }
 
@@ -128,7 +127,6 @@ int script_rand(instance *it)
 	unsigned int val = random_get();
 	variable *v = make_varf(0, (float)(mod % val));
 	ipush(it, (uint32_t)v);
-	free(v);
 	return 0;
 }
 
@@ -136,7 +134,6 @@ int script_getkey(instance *it)
 {
 	variable *v = make_varf(0, (float)keypad_get());
 	ipush(it, (uint32_t)v);
-	free(v);
 	return 0;
 }
 
