@@ -1,67 +1,8 @@
-# graph area
-plotx = 50
-ploty = 50
-plotw = 380
-ploth = 220
-cx = plotx + plotw / 2
-cy = ploty + ploth / 2
-
-# graph range
-xmin = 0 - 10
-xmax = 10
-ymin = 0 - 10
-ymax = 10
-
-xinc = plotw / (xmax - xmin)
-yinc = ploth / (ymax - ymin)
-
-mlines = color(3, 3, 3)
-
-func(makegrid) {
-	rect(plotx, ploty, plotw, ploth, 0)
-
-	x = plotx 
-	while (x <= plotx + plotw) {
-		line(x, ploty, x, ploty + ploth, mlines)
-		x = x + xinc
-	}
-
-	y = ploty
-	while (y <= ploty + ploth) {
-		line(plotx, y, plotx + plotw, y, mlines)
-		y = y + yinc
-	}
-
-	line(cx, ploty, cx, ploty + ploth, 32767)
-	line(plotx, cy, plotx + plotw, cy, 32767)
-}
-
-#
-# BIG LOOP - ask for equ, graph it
-#
-
-makegrid
-clearcmd = "clear"
+input = 0
 while (1) {
-	rect(0, 0, 480, 40, 0)
-	print("f(x) = ")
-	Fx = gets()
-
-	if (Fx == clearcmd) {
-		makegrid
-	} else {
-		# do function
-		x = xmin
-		while (x < xmax) {
-			y = solve(Fx)
-			y = 0 - y
-			if ((y >= ymin) & (y <= ymax)) {
-				pixel(cx + x * xinc, cy + y * yinc, 511)
-			}
-			x = x + 1 / xinc
-		}
+	while (input == 0) {
+		input = getkey
 	}
-
-	ppos(0, 0)
+	print(input)
+	input = 0
 }
-

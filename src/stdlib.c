@@ -62,7 +62,6 @@ char *snprintf(char *buf, unsigned int max, const char *format, ...)
 				break;
 			case 'f':
 				itoa((int)va_arg(args, double), nbuf, 10);
-				continue;
 				break;
 			default:
 				buf[off++] = format[i];

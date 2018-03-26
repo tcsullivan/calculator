@@ -18,22 +18,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stm32l476xx.h>
 #include <clock.h>
-#include <heap.h>
-#include <task.h>
-#include <gpio.h>
-#include <lcd.h>
 #include <display.h>
 #include <display_draw.h>
-#include <initrd.h>
-#include <parser.h>
-#include <serial.h>
-#include <string.h>
-#include <script.h>
-#include <random.h>
-#include <keypad.h>
 #include <flash.h>
+#include <gpio.h>
+#include <heap.h>
+#include <initrd.h>
+#include <keypad.h>
+#include <lcd.h>
+#include <parser.h>
+#include <random.h>
+#include <script.h>
+#include <serial.h>
+#include <stm32l476xx.h>
+#include <string.h>
+#include <task.h>
 
 extern uint8_t __bss_end__;
 extern char *itoa(int, char *, int);
@@ -54,12 +54,9 @@ int main(void)
 	clock_init();
 	heap_init(&__bss_end__);
 	gpio_init();
-	keypad_init();
 	serial_init();
 	random_init();
-
-	//extern void keypad_init(void);
-	//keypad_init();
+	keypad_init();
 
 	gpio_mode(GPIOA, 5, OUTPUT);
 
@@ -77,6 +74,7 @@ void kmain(void)
 	dsp_init();
 	dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, dsp_color(0, 0, 0));
 	dsp_cursoron();
+	keypad_init();
 	task_start(task_interpreter, 4096);
 
 	/*char buf[2];

@@ -23,34 +23,18 @@
 
 #include <stdint.h>
 
-#define K0 (uint16_t)(1 << 0)
-#define K1 (uint16_t)(1 << 1)
-#define K2 (uint16_t)(1 << 2)
-#define K3 (uint16_t)(1 << 3)
-#define K4 (uint16_t)(1 << 4)
-#define K5 (uint16_t)(1 << 5)
-#define K6 (uint16_t)(1 << 6)
-#define K7 (uint16_t)(1 << 7)
-#define K8 (uint16_t)(1 << 8)
-#define K9 (uint16_t)(1 << 9)
-#define KS (uint16_t)(1 << 10)
-#define KP (uint16_t)(1 << 11)
-
 /**
- * Initializes GPIO for the keypad. Must be called before any keypad reading.
+ * Initializes GPIO for the keypad.
+ * Starts a task to poll the buttons. Must be called before any keypad reading.
  */
 void keypad_init(void);
 
 /**
- * Reads the state of the keypad and returns it.
- * @return the keypad's state
+ * Reads the last pressed key on the keypad.
+ * This driver keeps an 8 key buffer for key presses.
+ * @return the pressed key (as the character it represents), zero if no presses
  */
-uint16_t keypad_get(void);
+int keypad_get(void);
 
-/**
- * Tests if the given key is currently pressed, returning non-zero if it is.
- * @return non-zero if pressed
- */
-uint8_t keypad_isdown(uint16_t);
 
 #endif // KEYPAD_H_
