@@ -1,7 +1,10 @@
 # calculator
-An OS for an STM32-based calculator  
+A from-scratch operating system for a graphing calculator.  
   
-Trying to make an operating system for a calculator based on the STM32L476RG, using its associated Nucleo board. Starting from scratch because it's fun.  
+The goal of this project is to design a functional operating system for a
+graphing calculator based on the STM32L476RG processor. This OS has been
+designed from scratch to optimize for speed and code size, targeting the
+features necessary for a graphing calculator application.  
   
 Required packages:
 * arm-none-eabi toolchain
@@ -10,4 +13,10 @@ Required packages:
   
 Use ```run.sh``` to upload the final output to the processor.  
   
-To make an initrd, add files to ```initrd/``` and then run ```./mkinitrd.sh```.
+  
+## design overview
+The core of the operating system is written entirely in C and assembly. This
+project is paired with the [interpreter project](https://code.bitgloo.com/clyne/interpreter)
+(licensed under the GPL),
+which parses script from C strings. The operating system exposes calls to the
+script parser, and then loads the text file at ```initrd/init```. 

@@ -1,3 +1,23 @@
+/**
+ * @file main.c
+ * Entry point for operating system
+ *
+ * Copyright (C) 2018 Clyne Sullivan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <stm32l476xx.h>
 #include <clock.h>
 #include <heap.h>
@@ -15,7 +35,7 @@
 #include <keypad.h>
 #include <flash.h>
 
-extern uint8_t _ebss;
+extern uint8_t __bss_end__;
 extern char *itoa(int, char *, int);
 
 void kmain(void);
@@ -32,7 +52,7 @@ int main(void)
 	FLASH->ACR |= FLASH_ACR_LATENCY_4WS;
 
 	clock_init();
-	heap_init(&_ebss);
+	heap_init(&__bss_end__);
 	gpio_init();
 	keypad_init();
 	serial_init();

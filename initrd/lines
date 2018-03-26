@@ -1,0 +1,29 @@
+print("Hello.\n")
+
+fg = 32767
+
+# draw bg, lines
+rect(50, 50, 380, 220, 6375)
+line(50, 160, 430, 160, fg)
+line(240, 50, 240, 270, fg)
+
+x = 50
+while (x <= 430) {
+	line(x, 170, x, 150, fg)
+	x = x + 20
+}
+
+y = 50
+while (y <= 270) {
+	line(230, y, 250, y, fg)
+	y = y + 20
+}
+
+while (1) {
+	x = rand(379) + 50
+	y = rand(219) + 50
+	i = 50 + rand(379)
+	j = 50 + rand(219)
+
+	line(x, y, i, j, 511)
+}
