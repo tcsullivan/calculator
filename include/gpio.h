@@ -83,7 +83,7 @@ void gpio_init(void);
  * @param pupd pullup/pulldown enable
  * @see GPIO_PUPD
  */
-void gpio_pupd(GPIO_TypeDef *port, uint8_t pin, uint8_t pupd);
+void gpio_pupd(GPIO_TypeDef *port, uint32_t pin, uint32_t pupd);
 
 /**
  * Sets whether to use push-pull or open drain for the given pin.
@@ -92,7 +92,7 @@ void gpio_pupd(GPIO_TypeDef *port, uint8_t pin, uint8_t pupd);
  * @param type what to use
  * @see GPIO_TYPE
  */
-void gpio_type(GPIO_TypeDef *port, uint8_t pin, uint8_t type);
+void gpio_type(GPIO_TypeDef *port, uint32_t pin, uint32_t type);
 
 /**
  * Sets the pin's speed.
@@ -101,7 +101,7 @@ void gpio_type(GPIO_TypeDef *port, uint8_t pin, uint8_t type);
  * @param speed the speed to use
  * @see GPIO_SPEED
  */
-void gpio_speed(GPIO_TypeDef *port, uint8_t pin, uint8_t speed);
+void gpio_speed(GPIO_TypeDef *port, uint32_t pin, uint32_t speed);
 
 /**
  * Sets the pin's i/o mode.
@@ -110,7 +110,7 @@ void gpio_speed(GPIO_TypeDef *port, uint8_t pin, uint8_t speed);
  * @param mode the mode to use
  * @see GPIO_MODE
  */
-void gpio_mode(GPIO_TypeDef *port, uint8_t pin, uint8_t mode);
+void gpio_mode(GPIO_TypeDef *port, uint32_t pin, uint32_t mode);
 
 /**
  * Sets the state of a digital output pin.
@@ -118,7 +118,7 @@ void gpio_mode(GPIO_TypeDef *port, uint8_t pin, uint8_t mode);
  * @param pin the pin
  * @param val non-zero for high, zero for low
  */
-void gpio_dout(GPIO_TypeDef *port, uint8_t pin, uint8_t val);
+void gpio_dout(GPIO_TypeDef *port, uint32_t pin, uint32_t val);
 
 /**
  * Reads a digital input pin.
@@ -126,6 +126,6 @@ void gpio_dout(GPIO_TypeDef *port, uint8_t pin, uint8_t val);
  * @param pin the pin
  * @return non-zero for high, zero for low
  */
-uint8_t gpio_din(GPIO_TypeDef *port, uint8_t pin);
+uint32_t gpio_din(GPIO_TypeDef *port, uint32_t pin);
 
 #endif // GPIO_H_

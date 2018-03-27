@@ -23,15 +23,15 @@
 #include <gpio.h>
 #include <task.h>
 
-#define ROW_0 GPIO_PORT(B, 15)
-#define ROW_1 GPIO_PORT(B, 14)
-#define ROW_2 GPIO_PORT(B, 13)
+#define ROW_0 GPIO_PORT(A, 12)
+#define ROW_1 GPIO_PORT(B, 12)
+#define ROW_2 GPIO_PORT(B, 11)
 #define ROW_3 GPIO_PORT(C, 4)
-#define COL_0 GPIO_PORT(B, 1)
-#define COL_1 GPIO_PORT(B, 2)
-#define COL_2 GPIO_PORT(B, 11)
-#define COL_3 GPIO_PORT(B, 12)
-#define COL_4 GPIO_PORT(A, 11)
+#define COL_0 GPIO_PORT(B, 13)
+#define COL_1 GPIO_PORT(B, 14)
+#define COL_2 GPIO_PORT(B, 15)
+#define COL_3 GPIO_PORT(B, 1)
+#define COL_4 GPIO_PORT(B, 2)
 
 #define ROWS 4
 #define COLS 5
@@ -49,43 +49,43 @@ static const port_t keypad_cols[COLS] = {
 	{ COL_0 }, { COL_1 }, { COL_2 }, { COL_3 }, { COL_4 }
 };
 
-//static const int keypad_map[ROWS][COLS] = {
-//	{ '7', '8', '9',  'x',  '/' },
-//	{ '4', '5', '6',  'y',  '*' },
-//	{ '3', '2', '1',  'z',  '-' },
-//	{ '.', '0', '\b', '\n', '+' }
-//};
+static const int keypad_map[ROWS][COLS] = {
+	{ '7', '8', '9',  'x',  '/' },
+	{ '4', '5', '6',  'y',  '*' },
+	{ '1', '2', '3',  '=',  '-' },
+	{ '.', '0', '\b', '\n', '+' }
+};
 
 #define BUFFER_SIZE 8
-static char keypad_buffer = 'A';//[BUFFER_SIZE];
+static char keypad_buffer = 0;//[BUFFER_SIZE];
 //static int keypad_buffer_pos = -1;
 
 void keypad_task(void)
 {
-	//unsigned int col = 0;
+	unsigned int col = 0;
 	while (1) {
-	//	gpio_dout(keypad_cols[col].port, keypad_cols[col].pin, 1);
-	//	for (unsigned int row = 0; row < ROWS; row++) {
-	//		if (gpio_din(keypad_rows[row].port, keypad_rows[row].pin)) {
-	//			//if (keypad_buffer_pos < BUFFER_SIZE)
-	//				keypad_buffer/*[++keypad_buffer_pos]*/ = keypad_map[row][col];
-	//			while (gpio_din(keypad_rows[row].port, keypad_rows[row].pin))
-	//				delay(1);
-	//			break;
-	//		}
-	//	}
-	//	gpio_dout(keypad_cols[col].port, keypad_cols[col].pin, 0);
-	//	col++;
-	//	if (col == COLS)
-	//		col = 0;
-
+		gpio_dout(keypad_cols[col].port, keypad_cols[col].pin, 1);
 		delay(10);
+		for (unsigned int row = 0; row < ROWS; row++) {
+			if (gpio_din(keypad_rows[row].port, keypad_rows[row].pin)) {
+				//if (keypad_buffer_pos < BUFFER_SIZE)
+					keypad_buffer/*[++keypad_buffer_pos]*/ = keypad_map[row][col];
+				while (gpio_din(keypad_rows[row].port, keypad_rows[row].pin))
+					delay(1);
+				break;
+			}
+		}
+
+		gpio_dout(keypad_cols[col].port, keypad_cols[col].pin, 0);
+		col++;
+		if (col == COLS)
+			col = 0;
 	}
 }
 
 void keypad_init(void)
 {
-	for (uint8_t i = 0; i < ROWS; i++) {
+	for (int i = 0; i < ROWS; i++) {
 		GPIO_TypeDef *p = keypad_rows[i].port;
 		uint16_t pin = keypad_rows[i].pin;
 		gpio_mode(p, pin, OUTPUT);
@@ -95,7 +95,7 @@ void keypad_init(void)
 		gpio_pupd(p, pin, PULLDOWN);
 	}
 
-	for (uint8_t i = 0; i < COLS; i++) {
+	for (int i = 0; i < COLS; i++) {
 		GPIO_TypeDef *p = keypad_cols[i].port;
 		uint16_t pin = keypad_cols[i].pin;
 		gpio_mode(p, pin, OUTPUT);

@@ -41,8 +41,8 @@ SECTIONS {
 		*(.text)
 		*(.text*)
 
-		*(.init)
-		*(.fini)
+		KEEP(*(.init))
+		KEEP(*(.fini))
 		. = ALIGN(8);
 	} > FLASH
 
@@ -64,14 +64,14 @@ SECTIONS {
 	/* init_array/fini_array (TODO understand this) */
 	.init_array : {
 		__init_array_start = .;
-		KEEP(*(SORT(.init_array.*)))
+		KEEP(*(.init_array.*))
 		KEEP(*(.init_array*))
 		__init_array_end = .;
 	} > FLASH
 
 	.fini_array : {
 		__fini_array_start = .;
-		KEEP(*(SORT(.fini_array.*)))
+		KEEP(*(.fini_array.*))
 		KEEP(*(.fini_array*))
 		__fini_array_end = .;
 	} > FLASH
@@ -88,10 +88,10 @@ SECTIONS {
 
 	/* uninitialized data */
 	.bss : {
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__bss_start__ = .;
 		*(.bss)
-		. = ALIGN(4);
+		. = ALIGN(8);
 		__bss_end__ = .;
 	} > RAM
 }

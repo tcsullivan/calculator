@@ -35,6 +35,7 @@
 #define igetarg_integer(it, n) ((int)igetarg(it, n)->value.f)
 
 int script_puts(instance *it);
+int script_putchar(instance *it);
 int script_gets(instance *it);
 int script_delay(instance *it);
 int script_rect(instance *it);
@@ -49,6 +50,7 @@ int script_menu(instance *it);
 void script_loadlib(instance *it)
 {
 	inew_cfunc(it, "print", script_puts);
+	inew_cfunc(it, "putchar", script_putchar);
 	inew_cfunc(it, "gets", script_gets);
 	inew_cfunc(it, "getkey", script_getkey);
 	inew_cfunc(it, "ppos", script_ppos);
@@ -86,11 +88,23 @@ int script_puts(instance *it)
 	variable *v = igetarg(it, 0);
 	if (v->type == NUMBER) {
 		char buf[33];
-		snprintf(buf, 33, "%f", v->value.f);
+		snprintf(buf, 33, "%d", (int)v->value.f); // TODO
 		dsp_puts(buf);
 	} else if (v->type == STRING) {
 		dsp_puts((const char *)v->value.p);
 	}
+	return 0;
+}
+
+int script_putchar(instance *it)
+{
+	variable *v = igetarg(it, 0);
+	char buf[2];
+	
+	buf[0] = (int)v->value.f;
+	buf[1] = '\0';
+	dsp_puts(buf);
+
 	return 0;
 }
 
@@ -101,7 +115,11 @@ int script_gets(instance *it)
 	int index = 0;
 
 	do {
-		c[0] = serial_get();
+		do {
+			c[0] = keypad_get();
+			delay(1);
+		} while (c[0] == 0);
+		//c[0] = serial_get();
 		s[index] = c[0];
 		if (c[0] == '\b' || c[0] == 127) {
 			index--;
@@ -109,10 +127,10 @@ int script_gets(instance *it)
 				dsp_puts("\b");
 				index--;
 			}
-		} else if (c[0] != '\r') {
+		} else if (c[0] != '\n'/*'\r'*/) {
 			dsp_puts(c);
 		}
-	} while (s[index] != '\r' && index++ < 63);
+	} while (s[index] != '\n'/*'\r'*/ && index++ < 63);
 	s[index] = '\0';
 
 	variable *r = make_vars(0, s);

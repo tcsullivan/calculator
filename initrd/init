@@ -1,8 +1,8 @@
-input = 0
 while (1) {
-	while (input == 0) {
-		input = getkey
-	}
-	print(input)
-	input = 0
+	print("> ")
+	input = gets()
+	answer = solve(input)
+	print("\n")
+	print(answer)
+	print("\n")
 }
