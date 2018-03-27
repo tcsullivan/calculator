@@ -49,12 +49,12 @@ static const port_t keypad_cols[COLS] = {
 	{ COL_0 }, { COL_1 }, { COL_2 }, { COL_3 }, { COL_4 }
 };
 
-static const int keypad_map[ROWS][COLS] = {
-	{ '7', '8', '9',  'x',  '/' },
-	{ '4', '5', '6',  'y',  '*' },
-	{ '3', '2', '1',  'z',  '-' },
-	{ '.', '0', '\b', '\n', '+' }
-};
+//static const int keypad_map[ROWS][COLS] = {
+//	{ '7', '8', '9',  'x',  '/' },
+//	{ '4', '5', '6',  'y',  '*' },
+//	{ '3', '2', '1',  'z',  '-' },
+//	{ '.', '0', '\b', '\n', '+' }
+//};
 
 #define BUFFER_SIZE 8
 static char keypad_buffer = 'A';//[BUFFER_SIZE];
@@ -62,22 +62,22 @@ static char keypad_buffer = 'A';//[BUFFER_SIZE];
 
 void keypad_task(void)
 {
-	unsigned int col = 0;
+	//unsigned int col = 0;
 	while (1) {
-		gpio_dout(keypad_cols[col].port, keypad_cols[col].pin, 1);
-		for (unsigned int row = 0; row < ROWS; row++) {
-			if (gpio_din(keypad_rows[row].port, keypad_rows[row].pin)) {
-				//if (keypad_buffer_pos < BUFFER_SIZE)
-					keypad_buffer/*[++keypad_buffer_pos]*/ = keypad_map[row][col];
-				while (gpio_din(keypad_rows[row].port, keypad_rows[row].pin))
-					delay(1);
-				break;
-			}
-		}
-		gpio_dout(keypad_cols[col].port, keypad_cols[col].pin, 0);
-		col++;
-		if (col == COLS)
-			col = 0;
+	//	gpio_dout(keypad_cols[col].port, keypad_cols[col].pin, 1);
+	//	for (unsigned int row = 0; row < ROWS; row++) {
+	//		if (gpio_din(keypad_rows[row].port, keypad_rows[row].pin)) {
+	//			//if (keypad_buffer_pos < BUFFER_SIZE)
+	//				keypad_buffer/*[++keypad_buffer_pos]*/ = keypad_map[row][col];
+	//			while (gpio_din(keypad_rows[row].port, keypad_rows[row].pin))
+	//				delay(1);
+	//			break;
+	//		}
+	//	}
+	//	gpio_dout(keypad_cols[col].port, keypad_cols[col].pin, 0);
+	//	col++;
+	//	if (col == COLS)
+	//		col = 0;
 
 		delay(10);
 	}
@@ -102,7 +102,10 @@ void keypad_init(void)
 		gpio_speed(p, pin, VERYHIGH);
 		gpio_dout(p, pin, 0);
 	}
+}
 
+void keypad_start(void)
+{
 	task_start(keypad_task, 1024);
 }
 

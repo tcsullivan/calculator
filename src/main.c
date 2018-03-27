@@ -74,7 +74,7 @@ void kmain(void)
 	dsp_init();
 	dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, dsp_color(0, 0, 0));
 	dsp_cursoron();
-	keypad_init();
+	keypad_start();
 	task_start(task_interpreter, 4096);
 
 	/*char buf[2];

@@ -28,6 +28,7 @@
  * Starts a task to poll the buttons. Must be called before any keypad reading.
  */
 void keypad_init(void);
+void keypad_start(void);
 
 /**
  * Reads the last pressed key on the keypad.

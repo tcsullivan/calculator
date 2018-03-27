@@ -35,31 +35,45 @@ SECTIONS {
 		. = ALIGN(8);
 	} > FLASH
 
-	/* code sections */
+	/* other code sections */
 	.text : {
 		. = ALIGN(8);
 		*(.text)
+		*(.text*)
+
+		*(.init)
+		*(.fini)
 		. = ALIGN(8);
 	} > FLASH
 
-	/* readonly data */
+	/* read-only data sections */
 	.rodata : {
 		. = ALIGN(8);
 		*(.rodata)
+		*(.rodata*)
+
+		*(.eh_frame)
 		. = ALIGN(8);
+	} > FLASH
+
+	/* ARM stuff */
+	.ARM.exidx : {
+		*(.ARM.exidx)
 	} > FLASH
 
 	/* init_array/fini_array (TODO understand this) */
 	.init_array : {
-		PROVIDE_HIDDEN(__init_array_start = .);
-		KEEP(*(.init_array))
-		PROVIDE_HIDDEN(__init_array_end = .);
+		__init_array_start = .;
+		KEEP(*(SORT(.init_array.*)))
+		KEEP(*(.init_array*))
+		__init_array_end = .;
 	} > FLASH
 
 	.fini_array : {
-		PROVIDE_HIDDEN(__fini_array_start = .);
-		KEEP(*(.fini_array))
-		PROVIDE_HIDDEN(__fini_array_end = .);
+		__fini_array_start = .;
+		KEEP(*(SORT(.fini_array.*)))
+		KEEP(*(.fini_array*))
+		__fini_array_end = .;
 	} > FLASH
 
 	/* initialized data */
@@ -74,9 +88,10 @@ SECTIONS {
 
 	/* uninitialized data */
 	.bss : {
-		. = ALIGN(8);
+		. = ALIGN(4);
 		__bss_start__ = .;
 		*(.bss)
+		. = ALIGN(4);
 		__bss_end__ = .;
 	} > RAM
 }
