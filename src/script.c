@@ -25,6 +25,7 @@
 #include <display.h>
 #include <display_draw.h>
 #include <heap.h>
+#include <initrd.h>
 #include <random.h>
 #include <serial.h>
 #include <stdlib.h>
@@ -46,6 +47,7 @@ int script_rand(instance *it);
 int script_getkey(instance *it);
 int script_pixel(instance *it);
 int script_menu(instance *it);
+int script_filemenu(instance *it);
 
 void script_loadlib(instance *it)
 {
@@ -64,6 +66,7 @@ void script_loadlib(instance *it)
 	inew_cfunc(it, "delay", script_delay);
 
 	inew_cfunc(it, "menu", script_menu);
+	inew_cfunc(it, "filemenu", script_filemenu);
 }
 
 int script_menu(instance *it)
@@ -81,6 +84,23 @@ int script_menu(instance *it)
 	}
 	free(resps);
 	return 0;
+}
+
+int script_filemenu(instance *it)
+{
+	char listbuf[4];
+	char *buf = calloc(17, 1);
+	char *fname;
+	strncpy(listbuf, " : \0", 4);
+	dsp_puts("Choose a file: \n");
+	for (unsigned int i = 0; (fname = initrd_getnfile(i)) != 0; i++) {
+		listbuf[0] = i + '0';
+		dsp_puts(listbuf);
+		dsp_puts(strncpy(buf, fname, 16));
+		dsp_puts("\n");
+	}
+	free(buf);
+	return script_gets(it);
 }
 
 int script_puts(instance *it)

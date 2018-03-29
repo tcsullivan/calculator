@@ -65,4 +65,6 @@ char *initrd_getfile(const char *name);
  */
 uint32_t initrd_getfilesize(const char *name);
 
+char *initrd_getnfile(unsigned int index);
+
 #endif // INITRD_H_

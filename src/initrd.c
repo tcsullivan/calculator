@@ -90,6 +90,23 @@ initrd_file *initrd_getfileptr(const char *name)
 	return 0;
 }
 
+char *initrd_getnfile(unsigned int index)
+{
+	initrd_file *file = (initrd_file *)((uint8_t *)initrd_start + sizeof(initrd_header));
+	uint32_t offset = sizeof(initrd_header);
+
+	for (unsigned int i = 0; i < index; i++) {
+		uint32_t size = initrd_getsize(file) + sizeof(initrd_file);
+		offset += size;
+		file = (initrd_file *)((uint8_t *)file + size);
+		if (file->name[0] == '\n')
+			file = (initrd_file *)((uint32_t)file + 1);
+	}
+	if ((uint32_t)file >= (uint32_t)initrd_start + initrd_size)
+		return 0;
+	return file->name;
+}
+
 char *initrd_getfile(const char *name)
 {
 	initrd_file *file = initrd_getfileptr(name);

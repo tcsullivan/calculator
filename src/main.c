@@ -45,7 +45,7 @@ int main(void)
 {
 	asm("cpsid i");
 	// disable cached writes for precise debug info
-	*((uint32_t *)0xE000E008) |= 2;
+	//*((uint32_t *)0xE000E008) |= 2;
 
 	// prepare flash latency for 80MHz operation
 	FLASH->ACR &= ~(FLASH_ACR_LATENCY);
@@ -77,20 +77,7 @@ void kmain(void)
 	keypad_start();
 	task_start(task_interpreter, 4096);
 
-	/*char buf[2];
-	flash_init();
-	buf[0] = 'A';
-	flash_write(buf, 0, 1);
-	buf[0] = 0;
-	flash_read(buf, 0x00000000, 1);
-	buf[0] += ' ';
-	buf[1] = '\0';
-	dsp_puts(buf);*/
-
 	while (1) {
-		//gpio_dout(GPIOA, 5,
-		//	(keypad_isdown(K0)));
-		//delay(10);
 		gpio_dout(GPIOA, 5, 1);
 		delay(250);
 		gpio_dout(GPIOA, 5, 0);
@@ -139,27 +126,4 @@ end:
 	while (1)
 		delay(10);
 }
-
-// for interactive use
-/*int ret = 0;
-char *linebuf = malloc(100), c[2] = {0, 0};
-while (1) {
-	uint16_t index = 0;
-	if (it.indent > 0)
-		dsp_puts(">");
-	dsp_puts("> ");
-	do {
-		c[0] = serial_get();
-		if (c[0] >= ' ' || c[0] == '\r') {
-			linebuf[index] = c[0];
-			if (c[0] >= ' ')
-				dsp_puts(c);
-		}
-	} while (linebuf[index] != '\r' && index++ < 100);
-	linebuf[index] = '\0';
-	dsp_puts("\n");
-	ret = idoline(&it, linebuf);
-	if (ret < 0)
-		break;
-}*/
 
