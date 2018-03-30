@@ -53,18 +53,20 @@ static const port_t keypad_cols[COLS] = {
 	{ COL_3 }, { COL_4 }
 };
 
-static const int keypad_map[ROWS][COLS] = {
-	{ '&', '|', '^',  ' ',  ' ' },
-	{ 'x', 'y', 'z',  '=',  ' ' },
-	{ '7', '8', '9',  '(',  ')' },
-	{ '4', '5', '6',  '/',  '%' },
-	{ '1', '2', '3',  '*',  '-' },
-	{ '.', '0', '\b', '\n', '+' }
+static const char keypad_map[ROWS * COLS * 4] = {
+	"&\0\0\0" "|\0\0\0" "pi\0\0"  "==\0\0"   "!=\0\0"
+	"x\0\0\0" "y\0\0\0" "z\0\0\0"  "=\0\0\0"  "sin\0"
+	"7\0\0\0" "8\0\0\0" "9\0\0\0"  "(\0\0\0"  ")\0\0\0"
+	"4\0\0\0" "5\0\0\0" "6\0\0\0"  "/\0\0\0"  "%\0\0\0"
+	"1\0\0\0" "2\0\0\0" "3\0\0\0"  "*\0\0\0"  "-\0\0\0"
+	".\0\0\0" "0\0\0\0" "\b\0\0\0" "\n\0\0\0" "+\0\0\0"
 };
 
+#define KEY(r, c, i) keypad_map[r * COLS * 4 + c * 4 + i]
+
 #define BUFFER_SIZE 8
-static char keypad_buffer = 0;//[BUFFER_SIZE];
-//static int keypad_buffer_pos = -1;
+static char keypad_buffer[BUFFER_SIZE];
+static int keypad_buffer_pos = -1;
 
 void keypad_task(void)
 {
@@ -74,8 +76,10 @@ void keypad_task(void)
 		delay(10);
 		for (unsigned int row = 0; row < ROWS; row++) {
 			if (gpio_din(keypad_rows[row].port, keypad_rows[row].pin)) {
-				//if (keypad_buffer_pos < BUFFER_SIZE)
-					keypad_buffer/*[++keypad_buffer_pos]*/ = keypad_map[row][col];
+				if (keypad_buffer_pos < BUFFER_SIZE) {
+					for (unsigned int i = 0; KEY(row, col, i) != '\0'; i++)
+						keypad_buffer[++keypad_buffer_pos] = KEY(row, col, i);
+				}
 				while (gpio_din(keypad_rows[row].port, keypad_rows[row].pin))
 					delay(1);
 				break;
@@ -117,15 +121,12 @@ void keypad_start(void)
 
 int keypad_get(void)
 {
-	//if (keypad_buffer_pos < 0)
-	//	return 0;
+	if (keypad_buffer_pos < 0)
+		return 0;
 
-	//int key = keypad_buffer[0];
-	//for (int i = keypad_buffer_pos - 1; i > 0; i--)
-	//	keypad_buffer[i - 1] = keypad_buffer[i];
-	//keypad_buffer_pos--;
-	//return key;
-	int ret = keypad_buffer;
-	keypad_buffer = 0;
-	return ret;
+	int key = keypad_buffer[0];
+	for (int i = 0; i < BUFFER_SIZE - 1; i++)
+		keypad_buffer[i] = keypad_buffer[i + 1];
+	keypad_buffer_pos--;
+	return key;
 }

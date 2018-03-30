@@ -53,7 +53,7 @@ $(OUT): $(OFILES) initrd/init libinterp.a
 	@$(CROSS)$(AR) r $(INITRD) initrd/*
 	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm $(INITRD) out/initrd.img.o
 	@echo "  LINK   " $(OUT)
-	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) out/*.o -o $(OUT) -L. -linterp
+	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) out/*.o -o $(OUT) -L. -linterp -lm
 
 $(OUTDIR)/%.o: src/%.c
 	@echo "  CC     " $<

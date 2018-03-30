@@ -26,11 +26,12 @@
 #include <display_draw.h>
 #include <heap.h>
 #include <initrd.h>
+#include <it/string.h>
+#include <keypad.h>
+#include <math.h>
 #include <random.h>
 #include <serial.h>
 #include <stdlib.h>
-#include <it/string.h>
-#include <keypad.h>
 
 #define igetarg_integer(it, n) ((int)igetarg(it, n)->value.f)
 
@@ -48,8 +49,12 @@ int script_pixel(instance *it);
 int script_menu(instance *it);
 int script_filemenu(instance *it);
 
+int math_sin(instance *it);
+
 void script_loadlib(instance *it)
 {
+	inew_number(it, "pi", 3.1415926f);
+
 	inew_cfunc(it, "print", script_puts);
 	inew_cfunc(it, "putchar", script_putchar);
 	inew_cfunc(it, "gets", script_gets);
@@ -66,6 +71,16 @@ void script_loadlib(instance *it)
 
 	inew_cfunc(it, "menu", script_menu);
 	inew_cfunc(it, "filemenu", script_filemenu);
+
+	inew_cfunc(it, "sin", math_sin);
+}
+
+int math_sin(instance *it)
+{
+	variable *n = igetarg(it, 0);
+	variable *v = make_varf(0, sinf(n->value.f));
+	ipush(it, (uint32_t)v);
+	return 0;
 }
 
 int script_menu(instance *it)
