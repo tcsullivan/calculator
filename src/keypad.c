@@ -23,17 +23,19 @@
 #include <gpio.h>
 #include <task.h>
 
-#define ROW_0 GPIO_PORT(A, 12)
-#define ROW_1 GPIO_PORT(B, 12)
-#define ROW_2 GPIO_PORT(B, 11)
-#define ROW_3 GPIO_PORT(C, 4)
-#define COL_0 GPIO_PORT(B, 13)
-#define COL_1 GPIO_PORT(B, 14)
-#define COL_2 GPIO_PORT(B, 15)
-#define COL_3 GPIO_PORT(B, 1)
-#define COL_4 GPIO_PORT(B, 2)
+#define ROW_0 GPIO_PORT(B, 2)
+#define ROW_1 GPIO_PORT(B, 1)
+#define ROW_2 GPIO_PORT(B, 15)
+#define ROW_3 GPIO_PORT(B, 14)
+#define ROW_4 GPIO_PORT(B, 13)
+#define ROW_5 GPIO_PORT(C, 4)
+#define COL_0 GPIO_PORT(B, 11)
+#define COL_1 GPIO_PORT(B, 12)
+#define COL_2 GPIO_PORT(A, 11)
+#define COL_3 GPIO_PORT(A, 12)
+#define COL_4 GPIO_PORT(C, 5)
 
-#define ROWS 4
+#define ROWS 6
 #define COLS 5
 
 typedef struct {
@@ -42,17 +44,21 @@ typedef struct {
 } port_t;
 
 static const port_t keypad_rows[ROWS] = {
-	{ ROW_0 }, { ROW_1 }, { ROW_2 }, { ROW_3 }
+	{ ROW_0 }, { ROW_1 }, { ROW_2 },
+	{ ROW_3 }, { ROW_4 }, { ROW_5 }
 };
 
 static const port_t keypad_cols[COLS] = {
-	{ COL_0 }, { COL_1 }, { COL_2 }, { COL_3 }, { COL_4 }
+	{ COL_0 }, { COL_1 }, { COL_2 },
+	{ COL_3 }, { COL_4 }
 };
 
 static const int keypad_map[ROWS][COLS] = {
-	{ '7', '8', '9',  'x',  '/' },
-	{ '4', '5', '6',  'y',  '*' },
-	{ '1', '2', '3',  '=',  '-' },
+	{ '&', '|', '^',  ' ',  ' ' },
+	{ 'x', 'y', 'z',  '=',  ' ' },
+	{ '7', '8', '9',  '(',  ')' },
+	{ '4', '5', '6',  '/',  '%' },
+	{ '1', '2', '3',  '*',  '-' },
 	{ '.', '0', '\b', '\n', '+' }
 };
 

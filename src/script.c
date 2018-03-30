@@ -20,7 +20,7 @@
 
 #include <script.h>
 
-#include <builtins.h>
+#include <it/builtins.h>
 #include <clock.h>
 #include <display.h>
 #include <display_draw.h>
@@ -29,9 +29,8 @@
 #include <random.h>
 #include <serial.h>
 #include <stdlib.h>
+#include <it/string.h>
 #include <keypad.h>
-
-#include <string.h>
 
 #define igetarg_integer(it, n) ((int)igetarg(it, n)->value.f)
 

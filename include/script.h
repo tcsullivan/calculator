@@ -21,7 +21,7 @@
 #ifndef SCRIPT_H_
 #define SCRIPT_H_
 
-#include <parser.h>
+#include <it/parser.h>
 
 /**
  * Loads the library for the given interpreter instance.

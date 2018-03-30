@@ -27,7 +27,7 @@
 #include <initrd.h>
 #include <keypad.h>
 #include <lcd.h>
-#include <parser.h>
+#include <it/parser.h>
 #include <random.h>
 #include <script.h>
 #include <serial.h>
