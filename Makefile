@@ -21,7 +21,7 @@
 CROSS = arm-none-eabi-
 CC = gcc
 AS = as
-AR = ar
+AR = tools/rba
 OBJCOPY = objcopy
 STRIP = strip
 
@@ -46,11 +46,10 @@ INITRD = initrd.img
 
 all: $(OUT)
 
-#@$(CROSS)$(STRIP) --only-keep-debug $(OUT)
 $(OUT): $(OFILES) initrd/init libinterp.a
 	@echo "  INITRD " $(INITRD)
 	@rm -f $(INITRD)
-	@$(CROSS)$(AR) r $(INITRD) initrd/*
+	@$(AR) $(INITRD) initrd/*
 	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm $(INITRD) out/initrd.img.o
 	@echo "  LINK   " $(OUT)
 	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) out/*.o -o $(OUT) -L. -linterp -lm

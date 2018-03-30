@@ -107,7 +107,7 @@ int script_filemenu(instance *it)
 	char *fname;
 	strncpy(listbuf, " : \0", 4);
 	dsp_puts("Choose a file: \n");
-	for (unsigned int i = 0; (fname = initrd_getnfile(i)) != 0; i++) {
+	for (unsigned int i = 0; (fname = initrd_getfile(i)) != 0; i++) {
 		listbuf[0] = i + '0';
 		dsp_puts(listbuf);
 		dsp_puts(strncpy(buf, fname, 16));

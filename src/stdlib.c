@@ -23,8 +23,8 @@
 #include <stdlib.h>
 
 #include <ctype.h>
+#include <heap.h>
 #include <stdarg.h>
-#include <stdint.h>
 #include <string.h>
 
 extern char *itoa(int, char *, int);
@@ -61,7 +61,7 @@ char *snprintf(char *buf, unsigned int max, const char *format, ...)
 				itoa(va_arg(args, unsigned int), nbuf, 16);
 				break;
 			case 'f':
-				itoa((int)va_arg(args, double), nbuf, 10);
+				itoa(va_arg(args, double), nbuf, 10);
 				break;
 			default:
 				buf[off++] = format[i];

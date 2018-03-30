@@ -27,44 +27,30 @@
 #include <stdint.h>
 
 /**
- * Structure for the archive's header.
- */
-typedef struct
-{
-	char signature[8]; /**< The archive's signature */
-} __attribute__ ((packed)) initrd_header;
-
-/**
- * Structure for a file entry in the archive.
- */
-typedef struct 
-{
-	char name[16];      /**< The name of the file */
-	uint8_t unused[32]; /**< Unused information */
-	char size[10];      /**< The file's size in bytes (as string) */
-	char sig[2];        /**< A signature to start file data */
-} __attribute__ ((packed)) initrd_file;
-
-/**
  * Confirms the initrd image is loaded and valid.
  * @return non-zero if valid image found
  */
 uint8_t initrd_validate(void);
 
 /**
+ * Gets the file name of the index'th file in the archive.
+ * @param index the index of the file
+ * @return the file's name, or zero if not found
+ */
+char *initrd_getfile(uint32_t index);
+
+/**
  * Gets contents of the given file.
  * @param name the file's name
  * @return pointer to file data, null if not found
  */
-char *initrd_getfile(const char *name);
+char *initrd_readfile(const char *name);
 
 /**
  * Gets the size of the given file.
  * @param name the file's name
  * @return the file's size, in bytes
  */
-uint32_t initrd_getfilesize(const char *name);
-
-char *initrd_getnfile(unsigned int index);
+uint32_t initrd_filesize(const char *name);
 
 #endif // INITRD_H_

@@ -90,7 +90,7 @@ void task_interpreter(void)
 	instance *it = inewinstance();
 	script_loadlib(it);
 
-	char *s = initrd_getfile("init");
+	char *s = initrd_readfile("init");
 	if (s == 0) {
 		dsp_puts("can't find init");
 		goto end;
@@ -98,7 +98,7 @@ void task_interpreter(void)
 
 	char *linebuf = (char *)malloc(120);
 	uint32_t i = 0, prev = 0, lc;
-	uint32_t size = initrd_getfilesize("init");
+	uint32_t size = initrd_filesize("init");
 	int ret = 0;
 	while (i < size) {
 		for (; s[i] != '\n' && s[i] != '\0'; i++);
