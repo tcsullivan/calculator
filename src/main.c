@@ -90,12 +90,14 @@ void task_interpreter(void)
 	instance *it = inewinstance();
 	script_loadlib(it);
 
+	// load '/init' file
 	char *s = initrd_readfile("init");
 	if (s == 0) {
 		dsp_puts("can't find init");
 		goto end;
 	}
 
+	// read in, parse into script code
 	char *linebuf = (char *)malloc(120);
 	uint32_t i = 0, prev = 0, lc;
 	uint32_t size = initrd_filesize("init");
@@ -109,21 +111,27 @@ void task_interpreter(void)
 		}
 		strncpy(linebuf, s + prev, lc + 1);
 		linebuf[lc] = '\0';
-		ret = idoline(it, linebuf);
-		if (ret < 0)
-			break;
+		ret = iaddline(it, linebuf);
+		if (ret != 0)
+			goto fail;
 		prev = ++i;
 	}
-
-	if (ret < 0) {
-		dsp_puts("\nError: ");
-		dsp_puts(itoa(ret, linebuf, 10));
-	}
 	free(linebuf);
-	//iend(&it); // nah
+
+	// run the script
+	ret = irun(it);
+	if (ret != 0)
+		goto fail;
+	idelinstance(it);
 
 end:
 	while (1)
 		delay(10);
+fail:
+	if (ret < 0) {
+		dsp_puts("\nError: ");
+		dsp_puts(itoa(ret, linebuf, 10));
+	}
+	goto end;
 }
 
