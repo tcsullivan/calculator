@@ -71,6 +71,9 @@ void dsp_putchar(int c)
 		return;
 	}
 
+	if (c > 0x7F)
+		goto end;
+
 	unsigned int start = ((c - ' ') / 16 * 192 * 26 + (c % 16) * 12) * 2;
 
 	unsigned int x = curxo + curx * 12;
@@ -92,6 +95,7 @@ void dsp_putchar(int c)
 			cury = 0;
 		}
 	}
+end:
 	UNLOCK;
 }
 

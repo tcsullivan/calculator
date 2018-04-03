@@ -76,11 +76,11 @@ void kmain(void)
 	dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, dsp_color(0, 0, 0));
 	dsp_cursoron();
 
-	char buf[2] = {0, 0};
-	buf[0] = 'A';
-	flash_write(buf, 42, 1);
-	buf[0] = 0;
-	flash_read(buf, 42, 1);
+	const char *test = "Hey there!";
+	flash_write(test, 0x1FD, 10);
+
+	char *buf = calloc(11, 1);
+	flash_read(buf, 0x1FD, 10);
 	dsp_puts(buf);
 
 	//keypad_start();

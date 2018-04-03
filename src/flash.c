@@ -1,19 +1,36 @@
-#include <stm32l476xx.h>
-#include <gpio.h>
 #include <clock.h>
+#include <gpio.h>
+#include <heap.h>
+#include <stm32l476xx.h>
+#include <string.h>
 
 #define READ  0x03
 #define WRITE 0x02
 #define WREN  0x06
 #define WRDS  0x04
 
-#define SCK GPIO_PORT(C, 14)
+#define SCK GPIO_PORT(D, 2)
 #define SI  GPIO_PORT(C, 3)
 #define SO  GPIO_PORT(C, 2)
-#define CS  GPIO_PORT(C, 15)
+#define CS  GPIO_PORT(B, 7)
 
-void flash_out(uint8_t);
-uint8_t flash_in(void);
+void flash_spi_xchg(char *buf, unsigned int count)
+{
+	gpio_dout(CS, 0);
+	// for each byte
+	for (unsigned int i = 0; i < count; i++) {
+		for (int b = 7; b >= 0; b--) {
+			gpio_dout(SI, buf[i] & (1 << b));
+			gpio_dout(SCK, 1);
+			if (gpio_din(SO))
+				buf[i] |= 1 << b;
+			else
+				buf[i] &= ~(1 << b);
+			gpio_dout(SCK, 0);
+		}
+	}
+	gpio_dout(CS, 1);
+}
 
 void flash_init(void)
 {
@@ -26,92 +43,64 @@ void flash_init(void)
 	gpio_dout(CS, 1);
 	gpio_dout(SCK, 0);
 	gpio_dout(SI, 0);
-
-	//RCC->AHB3ENR |= RCC_AHB3ENR_QSPIEN;
-
-	//// 10MHz operation, per datasheet
-	//QUADSPI->CR &= ~(0xFF << QUADSPI_CR_PRESCALER_Pos);
-	//QUADSPI->CR |= 7 << QUADSPI_CR_PRESCALER_Pos;
-
-	//// pick FSEL! 0=1, 1=2
-
-	//// FSIZE = 16, 2^17 bits = 1Mb
-	//QUADSPI->DCR = (16 << QUADSPI_DCR_FSIZE_Pos);
-
-	//// Memmap mode, single-spi
-	//QUADSPI->CCR = (3 << QUADSPI_CCR_FMODE_Pos) | (1 << QUADSPI_CCR_DMODE_Pos)
-	//	| (2 << QUADSPI_CCR_ADSIZE_Pos) | (1 << QUADSPI_CCR_ADMODE_Pos)
-	//	| (1 << QUADSPI_CCR_IMODE_Pos);
-	//// TODO CCR also takes instruction byte
-	//QUADSPI->CCR |= (READ << QUADSPI_CCR_INSTRUCTION_Pos);
-
-	//QUADSPI->CR |= QUADSPI_CR_EN;
-}
-
-void flash_out(uint8_t byte)
-{
-	for (uint8_t i = 0; i < 8; i++) {
-		gpio_dout(SI, (byte & (1 << (7 - i))));
-		gpio_dout(SCK, 1);
-		delay(1);
-		gpio_dout(SCK, 0);
-	}
-}
-
-void flash_addr(uint32_t addr)
-{
-	for (uint8_t i = 0; i < 24; i++) {
-		gpio_dout(SI, (addr & (1 << (23 - i))));
-		gpio_dout(SCK, 1);
-		delay(1);
-		gpio_dout(SCK, 0);
-	}
-}
-
-uint8_t flash_in(void)
-{
-	uint8_t byte = 0;
-	for (uint8_t i = 0; i < 8; i++) {
-		gpio_dout(SCK, 1);
-		delay(1);
-		gpio_dout(SCK, 0);
-		if (gpio_din(SO))
-			byte |= (1 << (7 - i));
-	}
-	return byte;
 }
 
 void flash_read(char *buf, uint32_t addr, unsigned int count)
 {
 	if (buf == 0)
 		return;
-	gpio_dout(CS, 0);
-	delay(1);
-	flash_out(READ);
-	flash_addr(addr);
-	for (unsigned int i = 0; i < count; i++)
-		buf[i] = flash_in();
-	gpio_dout(CS, 1);
-	delay(1);
+
+	char *spibuf = malloc(count + 4);
+	spibuf[0] = READ;
+	spibuf[1] = (addr >> 16) & 0xFF;
+	spibuf[2] = (addr >> 8) & 0xFF;
+	spibuf[3] = addr & 0xFF;
+	memcpy(spibuf + 4, buf, count);
+	flash_spi_xchg(spibuf, count + 4);
+	memcpy(buf, spibuf + 4, count);
+	free(spibuf);
+}
+
+void flash_small_write(char *buf, uint32_t addr, unsigned int count)
+{
+	char wren = WREN;
+	flash_spi_xchg(&wren, 1);
+	delay(10);
+
+	buf[0] = WRITE;
+	buf[1] = (addr >> 16) & 0xFF;
+	buf[2] = (addr >> 8) & 0xFF;
+	buf[3] = addr & 0xFF;
+	flash_spi_xchg(buf, count);
+	delay(10);
 }
 
 void flash_write(const char *buf, uint32_t addr, unsigned int count)
 {
 	if (buf == 0)
 		return;
-	gpio_dout(CS, 0);
-	delay(1);
-	flash_out(WREN);
-	gpio_dout(CS, 1);
-	delay(100);
-	gpio_dout(CS, 0);
-	flash_out(WRITE);
-	flash_addr(addr);
-	for (unsigned int i = 0; i < count; i++)
-		flash_out(buf[i]);
-	gpio_dout(CS, 1);
-	delay(100);
-	//gpio_dout(CS, 0);
-	//flash_out(WRDS);
-	//gpio_dout(CS, 1);
+
+	char *spibuf = malloc(260); // 4 header + 256 page size
+
+	uint32_t startaddr = addr;
+	uint16_t counter = 0;
+	unsigned int offset = 0;
+	for (uint32_t i = 0; i < count; i++) {
+		if (i > 0 && ((addr + i) & 0xFF) == 0) {
+			memcpy(spibuf + 4, buf + offset, counter);
+			flash_small_write(spibuf, startaddr, 4 + counter);
+
+			offset += counter;
+			startaddr += counter;
+			counter = 0;
+		}
+		counter++;
+	}
+
+	if (offset < count) {
+		memcpy(spibuf + 4, buf + offset, count - offset);
+		flash_small_write(spibuf, startaddr, 4 + count - offset);
+	}
+
+	free(spibuf);
 }
