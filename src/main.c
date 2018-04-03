@@ -57,6 +57,7 @@ int main(void)
 	serial_init();
 	random_init();
 	keypad_init();
+	flash_init();
 
 	gpio_mode(GPIOA, 5, OUTPUT);
 
@@ -74,8 +75,16 @@ void kmain(void)
 	dsp_init();
 	dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, dsp_color(0, 0, 0));
 	dsp_cursoron();
-	keypad_start();
-	task_start(task_interpreter, 4096);
+
+	char buf[2] = {0, 0};
+	buf[0] = 'A';
+	flash_write(buf, 42, 1);
+	buf[0] = 0;
+	flash_read(buf, 42, 1);
+	dsp_puts(buf);
+
+	//keypad_start();
+	//task_start(task_interpreter, 4096);
 
 	while (1) {
 		gpio_dout(GPIOA, 5, 1);
