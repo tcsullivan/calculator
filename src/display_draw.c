@@ -20,6 +20,8 @@
 
 #include <display_draw.h>
 #include <display.h>
+#include <flash.h>
+#include <heap.h>
 #include <task.h>
 #include <clock.h>
 
@@ -32,7 +34,8 @@ static unsigned int cury = 0;
 static unsigned int curxo = 0;
 static unsigned int curyo = 0;
 
-extern const unsigned char inconsolata24[192 * 156 * 2 + 1];
+//extern const unsigned char inconsolata24[192 * 156 * 2 + 1];
+static unsigned char *inconsolata24;
 
 void task_cursor(void)
 {
@@ -48,6 +51,9 @@ void task_cursor(void)
 
 void dsp_cursoron(void)
 {
+	inconsolata24 = malloc(192 * 156 * 2);
+	flash_read((char *)inconsolata24, 0, 192 * 156 * 2);
+
 	task_start(task_cursor, 512);
 }
 

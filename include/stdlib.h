@@ -41,6 +41,8 @@ char *snprintf(char *buf, unsigned int max, const char *format, ...);
  */
 float strtof(const char *s, char **endptr);
 
+char *ftostr(char *buf, float f);
+
 /**
  * Attempts to convert the given string to an integer.
  * @param s the string to convert

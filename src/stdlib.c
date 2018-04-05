@@ -23,7 +23,6 @@
 #include <stdlib.h>
 
 #include <ctype.h>
-#include <heap.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -133,4 +132,43 @@ int atoi(const char *s)
 	}
 
 	return (neg == 0) ? n : -n;
+}
+
+char *ftostr(char *buf, float f)
+{
+	if (buf == 0)
+		return 0;
+
+	unsigned int i = 0; // offset
+
+	// strip decimals, convert in reverse
+	for (int d = f; d != 0; d /= 10)
+		buf[i++] = d % 10 + '0';
+
+	// reverse
+	for (unsigned int j = 0; j < i / 2; j++) {
+		char c = buf[i - j - 1];
+		buf[i - j - 1] = buf[j];
+		buf[j] = c;
+	}
+
+	if ((float)((int)f) == f)
+		goto end;
+
+	buf[i++] = '.';
+
+	// decimals
+	float d = f;
+	// precision of 5 is safe, more gets questionable
+	for (unsigned int p = 0; p < 5; p++) {
+		d *= 10;
+		buf[i++] = (int)d % 10 + '0';
+	}
+
+	// trim 0's
+	for (unsigned int j = i - 1; buf[j] == '0'; j--)
+		buf[j] = '\0';
+end:
+	buf[i] = '\0';
+	return buf;
 }

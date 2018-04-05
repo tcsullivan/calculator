@@ -38,6 +38,10 @@ void flash_init(void)
 	gpio_mode(SI, OUTPUT);
 	gpio_mode(CS, OUTPUT);
 	gpio_mode(SO, OUTPUT);
+	gpio_speed(SCK, VERYHIGH);
+	gpio_speed(SI, VERYHIGH);
+	gpio_speed(SO, VERYHIGH);
+	gpio_speed(CS, VERYHIGH);
 	gpio_dout(SO, 0);
 	gpio_mode(SO, INPUT);
 	gpio_dout(CS, 1);
@@ -50,14 +54,28 @@ void flash_read(char *buf, uint32_t addr, unsigned int count)
 	if (buf == 0)
 		return;
 
-	char *spibuf = malloc(count + 4);
+	char *spibuf = malloc(1028);
+	unsigned int c = count / 1024;
+	unsigned int i = 0;
+	uint32_t paddr = addr;
+	for (i = 0; i < c; i++, paddr += 1024) {
+		spibuf[0] = READ;
+		spibuf[1] = (paddr >> 16) & 0xFF;
+		spibuf[2] = (paddr >> 8) & 0xFF;
+		spibuf[3] = paddr & 0xFF;
+		//memcpy(spibuf + 4, buf, count);
+		flash_spi_xchg(spibuf, 1028);
+		memcpy(buf + i * 1024, spibuf + 4, 1024);
+	}
+
+	c = count - i * 1024;
 	spibuf[0] = READ;
-	spibuf[1] = (addr >> 16) & 0xFF;
-	spibuf[2] = (addr >> 8) & 0xFF;
-	spibuf[3] = addr & 0xFF;
-	memcpy(spibuf + 4, buf, count);
-	flash_spi_xchg(spibuf, count + 4);
-	memcpy(buf, spibuf + 4, count);
+	spibuf[1] = (paddr >> 16) & 0xFF;
+	spibuf[2] = (paddr >> 8) & 0xFF;
+	spibuf[3] = paddr & 0xFF;
+	flash_spi_xchg(spibuf, 4 + c);
+	memcpy(buf + i * 1024, spibuf + 4, c);
+
 	free(spibuf);
 }
 

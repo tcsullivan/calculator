@@ -76,15 +76,14 @@ void kmain(void)
 	dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, dsp_color(0, 0, 0));
 	dsp_cursoron();
 
-	const char *test = "Hey there!";
-	flash_write(test, 0x1FD, 10);
+	/*extern const unsigned char inconsolata24[192 * 156 * 2 + 1];
+	for (uint32_t i = 0; i <= 192 * 156 * 2; i += 624) {
+		flash_write((char *)(inconsolata24 + i), i, 624);
+		dsp_puts(".");
+	}*/
 
-	char *buf = calloc(11, 1);
-	flash_read(buf, 0x1FD, 10);
-	dsp_puts(buf);
-
-	//keypad_start();
-	//task_start(task_interpreter, 4096);
+	keypad_start();
+	task_start(task_interpreter, 4096);
 
 	while (1) {
 		gpio_dout(GPIOA, 5, 1);

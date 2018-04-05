@@ -53,7 +53,7 @@ int math_sin(instance *it);
 
 void script_loadlib(instance *it)
 {
-	inew_number(it, "pi", 3.1415926f);
+	inew_number(it, "pi", 3.1415926535f);
 
 	inew_cfunc(it, "print", script_puts);
 	inew_cfunc(it, "putchar", script_putchar);
@@ -122,7 +122,8 @@ int script_puts(instance *it)
 	variable *v = igetarg(it, 0);
 	if (v->type == NUMBER) {
 		char buf[33];
-		snprintf(buf, 33, "%d", (int)v->value.f); // TODO
+		//snprintf(buf, 33, "%d", (int)v->value.f); // TODO
+		ftostr(buf, v->value.f);
 		dsp_puts(buf);
 	} else if (v->type == STRING) {
 		dsp_puts((const char *)v->value.p);
