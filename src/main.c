@@ -53,9 +53,9 @@ int main(void)
 
 	clock_init();
 	heap_init(&__bss_end__);
+	random_init();
 	gpio_init();
 	serial_init();
-	random_init();
 	keypad_init();
 	flash_init();
 
@@ -73,16 +73,9 @@ int main(void)
 void kmain(void)
 {
 	dsp_init();
-	dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, dsp_color(0, 0, 0));
 	dsp_cursoron();
-
-	/*extern const unsigned char inconsolata24[192 * 156 * 2 + 1];
-	for (uint32_t i = 0; i <= 192 * 156 * 2; i += 624) {
-		flash_write((char *)(inconsolata24 + i), i, 624);
-		dsp_puts(".");
-	}*/
-
 	keypad_start();
+
 	task_start(task_interpreter, 4096);
 
 	while (1) {
@@ -93,22 +86,23 @@ void kmain(void)
 	}
 }
 
-void task_interpreter(void)
+instance *load_program(const char *name)
 {
+	// load file
+	char *s = initrd_readfile(name);
+	if (s == 0) {
+		dsp_puts("can't find ");
+		dsp_puts(name);
+		goto fail;
+	}
+
 	instance *it = inewinstance();
 	script_loadlib(it);
-
-	// load '/init' file
-	char *s = initrd_readfile("init");
-	if (s == 0) {
-		dsp_puts("can't find init");
-		goto end;
-	}
 
 	// read in, parse into script code
 	char *linebuf = (char *)malloc(120);
 	uint32_t i = 0, prev = 0, lc;
-	uint32_t size = initrd_filesize("init");
+	uint32_t size = initrd_filesize(name);
 	int ret = 0;
 	while (i < size) {
 		for (; s[i] != '\n' && s[i] != '\0'; i++);
@@ -125,21 +119,30 @@ void task_interpreter(void)
 		prev = ++i;
 	}
 	free(linebuf);
+	return it;
+fail:
+	while (1);
+	return 0;
+}
+
+void task_interpreter(void)
+{
+	instance *it = load_program("init");
 
 	// run the script
-	ret = irun(it);
-	if (ret != 0)
-		goto fail;
+	/*int ret =*/ irun(it);
+	//if (ret != 0)
+		//goto end;
 	idelinstance(it);
 
-end:
+//end:
 	while (1)
 		delay(10);
-fail:
+/*fail:
 	if (ret < 0) {
 		dsp_puts("\nError: ");
 		dsp_puts(itoa(ret, linebuf, 10));
 	}
-	goto end;
+	goto end;*/
 }
 

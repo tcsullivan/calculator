@@ -22,6 +22,7 @@
 
 #include <it/builtins.h>
 #include <clock.h>
+#include <ctype.h>
 #include <display.h>
 #include <display_draw.h>
 #include <heap.h>
@@ -48,6 +49,8 @@ int script_getkey(instance *it);
 int script_pixel(instance *it);
 int script_menu(instance *it);
 int script_filemenu(instance *it);
+int script_program(instance *it);
+int script_free(instance *it);
 
 int math_sin(instance *it);
 
@@ -71,6 +74,8 @@ void script_loadlib(instance *it)
 
 	inew_cfunc(it, "menu", script_menu);
 	inew_cfunc(it, "filemenu", script_filemenu);
+	inew_cfunc(it, "program", script_program);
+	inew_cfunc(it, "freemem", script_free);
 
 	inew_cfunc(it, "sin", math_sin);
 }
@@ -96,6 +101,14 @@ int script_menu(instance *it)
 		dsp_puts("\n");
 		resps[i] = igetarg(it, 2 + i * 2)->value.f;
 	}
+
+	int c;
+	do c = keypad_get();
+	while (c == 0);
+
+	variable *v = make_varf(0, isdigit(c) ? c - '0' : -1.0f);
+	ipush(it, (uint32_t)v);
+
 	free(resps);
 	return 0;
 }
@@ -103,18 +116,25 @@ int script_menu(instance *it)
 int script_filemenu(instance *it)
 {
 	char listbuf[4];
-	char *buf = calloc(17, 1);
 	char *fname;
 	strncpy(listbuf, " : \0", 4);
 	dsp_puts("Choose a file: \n");
-	for (unsigned int i = 0; (fname = initrd_getfile(i)) != 0; i++) {
+	for (unsigned int i = 0; (fname = initrd_getname(i)) != 0; i++) {
 		listbuf[0] = i + '0';
 		dsp_puts(listbuf);
-		dsp_puts(strncpy(buf, fname, 16));
+		dsp_puts(fname);
+		free(fname);
 		dsp_puts("\n");
 	}
-	free(buf);
-	return script_gets(it);
+
+	int c;
+	do c = keypad_get();
+	while (c == 0);
+
+	variable *v = make_varf(0, isdigit(c) ? c - '0' : -1.0f);
+	ipush(it, (uint32_t)v);
+
+	return 0;
 }
 
 int script_puts(instance *it)
@@ -154,6 +174,12 @@ int script_gets(instance *it)
 			c[0] = keypad_get();
 			delay(1);
 		} while (c[0] == 0);
+
+		if (c[0] == 0x7F) {
+			it->lnidx = 998;
+			break;
+		}
+
 		//c[0] = serial_get();
 		s[index] = c[0];
 		if (c[0] == '\b' || c[0] == 127) {
@@ -227,7 +253,10 @@ int script_rand(instance *it)
 
 int script_getkey(instance *it)
 {
-	variable *v = make_varf(0, (float)keypad_get());
+	char c = keypad_get();
+	if (c == 0x7F)
+		it->lnidx = 998;
+	variable *v = make_varf(0, c);
 	ipush(it, (uint32_t)v);
 	return 0;
 }
@@ -239,3 +268,30 @@ int script_pixel(instance *it)
 	return 0;
 }
 
+extern instance *load_program(const char *name);
+int script_program(instance *it)
+{
+	int initrdOffset = (int)igetarg(it, 0)->value.f;
+	char *name = initrd_getname(initrdOffset);
+
+	dsp_rect(0, 0, 480, 320, 0);
+	dsp_cpos(0, 0);
+	dsp_coff(0, 0);
+
+	instance *it2 = load_program(name);
+	free(name);
+
+	int ret = irun(it2);
+	if (ret != 0)
+		return -1;
+
+	idelinstance(it2);
+	return 0;
+}
+
+int script_free(instance *it)
+{
+	extern uint32_t heap_used;
+	ipush(it, (uint32_t)make_varf(0, 98303 - heap_used));
+	return 0;
+}

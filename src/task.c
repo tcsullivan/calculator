@@ -21,6 +21,7 @@
 #include <task.h>
 #include <heap.h>
 #include <stm32l476xx.h>
+#include <string.h>
 
 task_t *current;
 static uint8_t task_disable = 0;
@@ -35,9 +36,9 @@ void task_hold(uint8_t hold)
 
 void task_exit(void)
 {
-	// TODO free stack?
-	// TODO remove from chain
-	// hopefully current is preserved..?
+	free(current->stack);
+	// TODO remove from chain?
+	// hopefully this is fine...
 	while (1); // bye
 }
 
@@ -47,7 +48,7 @@ task_t *task_create(void (*code)(void), uint32_t stackSize)
 	t->next = 0;
 	t->stack = (uint32_t *)malloc(stackSize);
 	void *sp = (uint8_t *)t->stack + stackSize - 68; // excep. stack + regs
-	t->sp = (uint32_t *)sp;
+	t->sp = sp;
 	for (uint8_t i = 0; i < 14; i++)
 		t->sp[i] = 0;
 	t->sp[8] = 0xFFFFFFFD;
@@ -67,7 +68,7 @@ void task_init(void (*init)(void))
 	asm("\
 		msr psp, %0; \
 		mrs r0, control; \
-		orr r0, r0, #3; \
+		orr r0, r0, #2; \
 		cpsie i; \
 		msr control, r0; \
 		isb; \
@@ -83,6 +84,32 @@ void task_start(void (*task)(void), uint16_t stackSize)
 	current->next = t;
 	task_hold(0);
 }
+
+/*int fork_ret(void)
+{
+	return 1;
+}
+
+int fork(void)
+{
+	void (*pc)(void) = (void (*)(void))((uint32_t)fork_ret & ~(3));
+	task_hold(1);
+
+	// duplicate task info
+	alloc_t *heapInfo = (alloc_t *)(current->stack - 2);
+	task_t *t = task_create(pc, heapInfo->size);
+	memcpy(t->stack, current->stack, heapInfo->size);
+	uint32_t *sp;
+	asm("mov %0, sp" : "=r" (sp));
+	t->sp = t->stack + (sp - current->stack);
+
+	t->next = current->next;
+	current->next = t;
+	current = t;
+	task_hold(0);
+	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+	return 0;
+}*/
 
 __attribute__ ((naked))
 void PendSV_Handler(void) 
@@ -105,28 +132,5 @@ void PendSV_Handler(void)
 		msr psp, r0; \
 		bx lr; \
 	");
-
-	/*// save state
-	asm("\
-		cpsid i; \
-		isb; \
-		dsb; \
-		mrs r0, psp; \
-		stmdb r0!, {r4-r11, lr}; \
-		mov %0, r0; \
-	" : "=r" (current->sp));
-
-	current = current->next;
-
-	// restore
-	asm("\
-		mov r0, %0; \
-		ldmia r0!, {r4-r11, lr}; \
-		msr psp, r0; \
-		isb; \
-		dsb; \
-		cpsie i; \
-		bx lr; \
-	" :: "r" (current->sp));*/
 }
 

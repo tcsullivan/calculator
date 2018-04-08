@@ -23,6 +23,7 @@
  */
 
 #include <initrd.h>
+#include <heap.h>
 #include <string.h>
 
 extern uint8_t _binary_initrd_img_start[];
@@ -48,6 +49,18 @@ char *initrd_getfile(uint32_t offset)
 	}
 
 	return ptr;
+}
+
+char *initrd_getname(uint32_t offset)
+{
+	char *file = initrd_getfile(offset);
+	if (file == 0)
+		return 0;
+	uint32_t len = *((uint32_t *)file);
+	char *buf = malloc(len + 1);
+	strncpy(buf, file + 4, len);
+	buf[len] = '\0';
+	return buf;
 }
 
 char *initrd_readfile(const char *name)

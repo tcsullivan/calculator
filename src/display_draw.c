@@ -25,6 +25,11 @@
 #include <task.h>
 #include <clock.h>
 
+#define C_WIDTH  12
+#define C_HEIGHT 16
+#define S_WIDTH  40
+#define S_HEIGHT 20
+
 volatile uint8_t lock = 0;
 #define LOCK while (lock) { delay(5); } task_hold(1); lock = 1
 #define UNLOCK task_hold(0); lock = 0
@@ -33,27 +38,24 @@ static unsigned int curx = 0;
 static unsigned int cury = 0;
 static unsigned int curxo = 0;
 static unsigned int curyo = 0;
-
-//extern const unsigned char inconsolata24[192 * 156 * 2 + 1];
-static unsigned char *inconsolata24;
+static unsigned char *font;
 
 void task_cursor(void)
 {
 	while (1) {
-		int x = curxo + curx * 12;
-		int y = curyo + cury * 26;
-		dsp_rect(x, y + 24, 12, 1, 0xFFFF);
+		int x = curxo + curx * C_WIDTH;
+		int y = curyo + cury * C_HEIGHT;
+		dsp_rect(x, y + C_HEIGHT, C_WIDTH, 1, 0xFFFF);
 		delay(300);
-		dsp_rect(x, y + 24, 12, 1, 0);
+		dsp_rect(x, y + C_HEIGHT, C_WIDTH, 1, 0);
 		delay(300);
 	}
 }
 
 void dsp_cursoron(void)
 {
-	inconsolata24 = malloc(192 * 156 * 2);
-	flash_read((char *)inconsolata24, 0, 192 * 156 * 2);
-
+	font = malloc(32 * 256);
+	flash_read((char *)font, 0, 32 * 256);
 	task_start(task_cursor, 512);
 }
 
@@ -62,7 +64,7 @@ void dsp_putchar(int c)
 	LOCK;
 	if (c == '\n') {
 		curx = 0;
-		if (++cury == 12) {
+		if (++cury == S_HEIGHT) {
 			UNLOCK;
 			dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, 0);
 			cury = 0;
@@ -73,35 +75,35 @@ void dsp_putchar(int c)
 		if (curx > 0)
 			curx--;
 		UNLOCK;
-		dsp_rect(curxo + curx * 12, curyo + cury * 26, 12, 26, 0);
+		dsp_rect(curxo + curx * C_WIDTH, curyo + cury * C_HEIGHT,
+			C_WIDTH, C_HEIGHT, 0);
 		return;
 	}
 
-	if (c > 0x7F)
-		goto end;
+	unsigned int x = curxo + curx * C_WIDTH;
+	unsigned int y = curyo + cury * C_HEIGHT;
+	dsp_set_addr(x, y, x + C_WIDTH - 1, y + C_HEIGHT - 1);
 
-	unsigned int start = ((c - ' ') / 16 * 192 * 26 + (c % 16) * 12) * 2;
-
-	unsigned int x = curxo + curx * 12;
-	unsigned int y = curyo + cury * 26;
-	dsp_set_addr(x, y, x + 11, y + 25);
-	// for each row
-	for (unsigned int i = 0; i < 26; i++) {
-		// for each column
-		for (int j = 12 * 2 - 1; j >= 0; j--)
-			dsp_write_data(inconsolata24[start + (i * 192 * 2) + j]);
+	uint32_t base = c * 32;
+	for (unsigned int j = 0; j < 16; j++) {
+		uint16_t row = (font[base + j * 2] << 8) | font[base + j * 2 + 1];
+		for (int i = 4; i < 16; i++) {
+			uint8_t color = (row & (1 << i)) ? 0xFF : 0;
+			dsp_write_data(color);
+			dsp_write_data(color);
+		}
 	}
 
-	if (++curx == 40) {
+	if (++curx == S_WIDTH) {
 		curx = 0;
-		if (++cury == 12) {
+		if (++cury == S_HEIGHT) {
 			UNLOCK;
 			dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, 0);
 			LOCK;
 			cury = 0;
 		}
 	}
-end:
+
 	UNLOCK;
 }
 

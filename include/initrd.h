@@ -38,6 +38,7 @@ uint8_t initrd_validate(void);
  * @return the file's name, or zero if not found
  */
 char *initrd_getfile(uint32_t index);
+char *initrd_getname(uint32_t index);
 
 /**
  * Gets contents of the given file.

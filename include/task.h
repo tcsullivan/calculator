@@ -54,4 +54,6 @@ void task_start(void (*task)(void), uint16_t stackSize);
  */
 void task_hold(uint8_t hold);
 
+//int fork(void);
+
 #endif // TASK_H_

@@ -26,4 +26,7 @@ while (1) {
 	j = 50 + rand(219)
 
 	line(x, y, i, j, 511)
+
+	# for exiting
+	getkey()
 }
