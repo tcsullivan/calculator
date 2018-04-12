@@ -40,6 +40,7 @@ extern char *itoa(int, char *, int);
 
 void kmain(void);
 void task_interpreter(void);
+void task_status(void);
 
 int main(void)
 {
@@ -77,6 +78,7 @@ void kmain(void)
 	keypad_start();
 
 	task_start(task_interpreter, 4096);
+	task_start(task_status, 512);
 
 	while (1) {
 		gpio_dout(GPIOA, 5, 1);
@@ -123,6 +125,34 @@ instance *load_program(const char *name)
 fail:
 	while (1);
 	return 0;
+}
+
+ 
+
+void task_status(void)
+{
+	extern int keypad_insert;
+
+	int lastInsert = -1;
+
+	int16_t bg = dsp_color(0x3F, 0x3F, 0x3F);
+	int16_t red = dsp_color(0xFF, 0, 0);
+	int16_t green = dsp_color(0, 0xFF, 0);
+
+	dsp_rect(0, 300, 480, 20, bg);
+
+	while (1) {
+		if (lastInsert != keypad_insert) {
+			lastInsert = keypad_insert;
+			dsp_rect(0, 300, 480, 20, bg);
+			if (lastInsert > 0)
+				dsp_rect(4, 304, 12, 12, green);
+			else
+				dsp_rect(4, 304, 12, 12, red);
+		}
+
+		delay(500);
+	}
 }
 
 void task_interpreter(void)

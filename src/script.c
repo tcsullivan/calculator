@@ -168,6 +168,7 @@ int script_gets(instance *it)
 	char *s = malloc(64);
 	char c[2] = {0, 0};
 	int index = 0;
+	int furthest = 0;
 
 	do {
 		do {
@@ -178,9 +179,32 @@ int script_gets(instance *it)
 		if (c[0] == 0x7F) {
 			it->lnidx = 998;
 			break;
+		} else if (c[0] == K_LEFT) {
+			if (index > 0) {
+				dsp_spos(-1, 0);
+				index--;
+			}
+			continue;
+		} else if (c[0] == K_RIGHT) {
+			if (index < furthest) {
+				dsp_spos(1, 0);
+				index++;
+			}
+			continue;
+		} else if (c[0] == K_UP || c[0] == K_DOWN)
+			continue;
+
+		if (c[0] == '\n') {
+			s[furthest] = '\n';
+			break;
 		}
 
-		//c[0] = serial_get();
+		extern int keypad_insert;
+		if (keypad_insert != 0 && index < furthest) {
+			for (int i = furthest; i >= index; i--)
+				s[i] = s[i - 1];
+		}
+
 		s[index] = c[0];
 		if (c[0] == '\b' || c[0] == 127) {
 			index--;
@@ -188,11 +212,20 @@ int script_gets(instance *it)
 				dsp_puts("\b");
 				index--;
 			}
+		} else if (keypad_insert != 0) {
+			dsp_spos(-index, 0);
+			s[furthest + 1] = '\0';
+			dsp_puts(s);
+			dsp_spos(-(furthest - index), 0);
+			furthest++;
 		} else if (c[0] != '\n'/*'\r'*/) {
 			dsp_puts(c);
 		}
-	} while (s[index] != '\n'/*'\r'*/ && index++ < 63);
-	s[index] = '\0';
+
+		if (++index > furthest)
+			furthest = index;
+	} while (furthest < 63);
+	s[furthest] = '\0';
 
 	variable *r = make_vars(0, s);
 	ipush(it, (uint32_t)r);
@@ -274,7 +307,7 @@ int script_program(instance *it)
 	int initrdOffset = (int)igetarg(it, 0)->value.f;
 	char *name = initrd_getname(initrdOffset);
 
-	dsp_rect(0, 0, 480, 320, 0);
+	dsp_rect(0, 0, 480, 300, 0);
 	dsp_cpos(0, 0);
 	dsp_coff(0, 0);
 

@@ -28,7 +28,7 @@
 #define C_WIDTH  12
 #define C_HEIGHT 16
 #define S_WIDTH  40
-#define S_HEIGHT 20
+#define S_HEIGHT 18
 
 volatile uint8_t lock = 0;
 #define LOCK while (lock) { delay(5); } task_hold(1); lock = 1
@@ -66,7 +66,7 @@ void dsp_putchar(int c)
 		curx = 0;
 		if (++cury == S_HEIGHT) {
 			UNLOCK;
-			dsp_rect(0, 0, LCD_WIDTH, LCD_HEIGHT, 0);
+			dsp_rect(0, 0, C_WIDTH * S_WIDTH, C_HEIGHT * S_HEIGHT, 0);
 			cury = 0;
 		}
 		UNLOCK;
@@ -118,6 +118,14 @@ void dsp_cpos(int x, int y)
 {
 	curx = x;
 	cury = y;
+}
+
+void dsp_spos(int x, int y)
+{
+	if ((int)curx + x >= 0)
+		curx += x;
+	if ((int)cury + y >= 0)
+		cury += y;
 }
 
 void dsp_coff(int x, int y)

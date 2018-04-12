@@ -1,5 +1,5 @@
 while (1) {
-	rect(0, 0, 480, 320, 0)
+	rect(0, 0, 480, 300, 0)
 	ppos(0, 0)
 
 	print("Free mem: ")

@@ -23,6 +23,11 @@
 
 #include <stdint.h>
 
+#define K_UP    0x18
+#define K_DOWN  0x19
+#define K_LEFT  0x1B
+#define K_RIGHT 0x1A
+
 /**
  * Initializes GPIO for the keypad.
  * Starts a task to poll the buttons. Must be called before any keypad reading.

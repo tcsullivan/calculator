@@ -63,6 +63,11 @@ void dsp_rect(int x, int y, int w, int h, uint16_t color);
  */
 void dsp_cpos(int x, int y);
 
+/*
+ * Shifts the cursor the given amount of characters.
+ */
+void dsp_spos(int x, int y);
+
 /**
  * Sets the pixel offset of the text cursor.
  * @param x x-pixel offset from (0, 0)
