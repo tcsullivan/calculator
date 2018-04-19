@@ -35,6 +35,8 @@
 #define COL_3 GPIO_PORT(A, 12)
 #define COL_4 GPIO_PORT(C, 5)
 
+#define BTN_SLEEP GPIO_PORT(C, 11)
+
 #define ROWS 6
 #define COLS 5
 
@@ -59,7 +61,7 @@ static const port_t keypad_cols[COLS] = {
 
 static const char keypad_map[ROWS * COLS * 4] = {
 	"\x7F\0\0\0" "\xFF\0\0\0" "\xFF\x02\0\0" "\x19\0\0\0" "\x18\0\0\0"
-	"x\0\0\0"    "\0\0\0\0"   "\0\0\0\0" "\x1B\0\0\0" "\x1A\0\0\0"
+	"sin\0"      "cos\0"      "tan\0"    "\x1B\0\0\0" "\x1A\0\0\0"
 	"7\0\0\0"    "8\0\0\0"    "9\0\0\0"  "(\0\0\0"    ")\0\0\0"
 	"4\0\0\0"    "5\0\0\0"    "6\0\0\0"  "/\0\0\0"    "*\0\0\0"
 	"1\0\0\0"    "2\0\0\0"    "3\0\0\0"  "-\0\0\0"    "+\0\0\0"
@@ -67,12 +69,12 @@ static const char keypad_map[ROWS * COLS * 4] = {
 };
 
 static const char keypad_map_2nd[ROWS * COLS * 4] = {
-	"a\0\0\0" "b\0\0\0"  "c\0\0\0"  "d\0\0\0"  "e\0\0\0"
-	"f\0\0\0" "g\0\0\0"  "h\0\0\0"  "i\0\0\0"  "j\0\0\0"
-	"k\0\0\0" "l\0\0\0"  "m\0\0\0"  "n\0\0\0"  "o\0\0\0"
-	"p\0\0\0" "q\0\0\0"  "r\0\0\0"  "s\0\0\0"  "t\0\0\0"
-	"u\0\0\0" "v\0\0\0"  "w\0\0\0"  "x\0\0\0"  "y\0\0\0"
-	"z\0\0\0" "\0\0\0\0" "\0\0\0\0" "\0\0\0\0" "\xFF\x01\0\0"
+	"\x7F\0\0\0" "pi\0\0"  "X\0\0\0" "Y\0\0\0"  "Z\0\0\0"
+	"A\0\0\0"    "B\0\0\0" "C\0\0\0" "D\0\0\0"  "E\0\0\0"
+	"F\0\0\0"    "G\0\0\0" "H\0\0\0" "I\0\0\0"  "J\0\0\0"
+	"K\0\0\0"    "L\0\0\0" "M\0\0\0" "N\0\0\0"  "O\0\0\0"
+	"P\0\0\0"    "Q\0\0\0" "R\0\0\0" "S\0\0\0"  "T\0\0\0"
+	"U\0\0\0"    "V\0\0\0" "W\0\0\0" "\b\0\0\0" "\xFF\x01\0\0"
 };
 
 #define KEY(r, c, i) map[r * COLS * 4 + c * 4 + i]
@@ -142,6 +144,19 @@ void keypad_init(void)
 		gpio_speed(p, pin, VERYHIGH);
 		gpio_dout(p, pin, 0);
 	}
+
+	gpio_mode(BTN_SLEEP, OUTPUT);
+	gpio_dout(BTN_SLEEP, 0);
+	gpio_mode(BTN_SLEEP, INPUT);
+	gpio_pupd(BTN_SLEEP, PULLDOWN);
+
+	//SYSCFG->EXTICR[2] |= 0x200; // C10
+	EXTI->RTSR1 |= (1 << 11);
+	EXTI->EMR1 |= (1 << 11); // Allow *10
+	EXTI->IMR1 |= (1 << 11);
+
+	// enable IRQ in NVIC
+	((uint32_t *)0xE000E100)[1] |= (1 << 8);
 }
 
 void keypad_start(void)
@@ -160,3 +175,24 @@ int keypad_get(void)
 	keypad_buffer_pos--;
 	return key;
 }
+
+uint32_t sleep_pending = 0;
+void EXTI15_10_IRQHandler(void)
+{
+	uint32_t PR1 = EXTI->PR1;
+
+	if (gpio_din(BTN_SLEEP)) {
+		while (gpio_din(BTN_SLEEP));
+		if (sleep_pending != 0) {
+			sleep_pending = 0;
+			extern void wakeup(void);
+			wakeup();
+		} else {
+			sleep_pending |= 1;
+		}
+		return;
+	}
+
+	EXTI->PR1 |= PR1;
+}
+

@@ -92,4 +92,7 @@ void dsp_set_addr(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
  */
 void dsp_set_addr_read(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 
+void dsp_sleep(void);
+void dsp_wakeup(void);
+
 #endif // DISPLAY_H_

@@ -39,9 +39,11 @@
 int script_puts(instance *it);
 int script_putchar(instance *it);
 int script_gets(instance *it);
+int script_getf(instance *it);
 int script_delay(instance *it);
 int script_rect(instance *it);
 int script_ppos(instance *it);
+int script_rpos(instance *it);
 int script_line(instance *it);
 int script_color(instance *it);
 int script_rand(instance *it);
@@ -53,6 +55,8 @@ int script_program(instance *it);
 int script_free(instance *it);
 
 int math_sin(instance *it);
+int math_cos(instance *it);
+int math_tan(instance *it);
 
 void script_loadlib(instance *it)
 {
@@ -61,8 +65,10 @@ void script_loadlib(instance *it)
 	inew_cfunc(it, "print", script_puts);
 	inew_cfunc(it, "putchar", script_putchar);
 	inew_cfunc(it, "gets", script_gets);
+	inew_cfunc(it, "getf", script_getf);
 	inew_cfunc(it, "getkey", script_getkey);
 	inew_cfunc(it, "ppos", script_ppos);
+	inew_cfunc(it, "rpos", script_rpos);
 
 	inew_cfunc(it, "pixel", script_pixel);
 	inew_cfunc(it, "line", script_line);
@@ -78,12 +84,30 @@ void script_loadlib(instance *it)
 	inew_cfunc(it, "freemem", script_free);
 
 	inew_cfunc(it, "sin", math_sin);
+	inew_cfunc(it, "cos", math_cos);
+	inew_cfunc(it, "tan", math_tan);
 }
 
 int math_sin(instance *it)
 {
 	variable *n = igetarg(it, 0);
 	variable *v = make_varf(0, sinf(n->value.f));
+	ipush(it, (uint32_t)v);
+	return 0;
+}
+
+int math_cos(instance *it)
+{
+	variable *n = igetarg(it, 0);
+	variable *v = make_varf(0, cosf(n->value.f));
+	ipush(it, (uint32_t)v);
+	return 0;
+}
+
+int math_tan(instance *it)
+{
+	variable *n = igetarg(it, 0);
+	variable *v = make_varf(0, tanf(n->value.f));
 	ipush(it, (uint32_t)v);
 	return 0;
 }
@@ -113,13 +137,15 @@ int script_menu(instance *it)
 	return 0;
 }
 
+#include <fat32.h>
+
 int script_filemenu(instance *it)
 {
 	char listbuf[4];
 	char *fname;
 	strncpy(listbuf, " : \0", 4);
 	dsp_puts("Choose a file: \n");
-	for (unsigned int i = 0; (fname = initrd_getname(i)) != 0; i++) {
+	for (unsigned int i = 0; (fname = /*initrd*/fat_getname(i)) != 0; i++) {
 		listbuf[0] = i + '0';
 		dsp_puts(listbuf);
 		dsp_puts(fname);
@@ -160,6 +186,18 @@ int script_putchar(instance *it)
 	buf[1] = '\0';
 	dsp_puts(buf);
 
+	return 0;
+}
+
+int script_getf(instance *it)
+{
+	if (script_gets(it) != 0)
+		return -1;
+
+	variable *s = (variable *)ipop(it);
+	s->value.f = strtof((char *)s->value.p, 0);
+	s->type = NUMBER;
+	ipush(it, (uint32_t)s);
 	return 0;
 }
 
@@ -261,8 +299,14 @@ int script_line(instance *it)
 
 int script_ppos(instance *it)
 {
-	dsp_cpos(0, 0);
-	dsp_coff(igetarg_integer(it, 0), igetarg_integer(it, 1));
+	dsp_coff(0, 0);
+	dsp_cpos(igetarg_integer(it, 0), igetarg_integer(it, 1));
+	return 0;
+}
+
+int script_rpos(instance *it)
+{
+	dsp_spos(igetarg_integer(it, 0), igetarg_integer(it, 1));
 	return 0;
 }
 
@@ -305,7 +349,7 @@ extern instance *load_program(const char *name);
 int script_program(instance *it)
 {
 	int initrdOffset = (int)igetarg(it, 0)->value.f;
-	char *name = initrd_getname(initrdOffset);
+	char *name = fat_getname(initrdOffset);
 
 	dsp_rect(0, 0, 480, 300, 0);
 	dsp_cpos(0, 0);

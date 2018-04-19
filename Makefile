@@ -46,7 +46,7 @@ INITRD = initrd.img
 
 all: $(OUT)
 
-$(OUT): $(OFILES) initrd/init libinterp.a
+$(OUT): $(OFILES) initrd/* libinterp.a
 	@echo "  INITRD " $(INITRD)
 	@rm -f $(INITRD)
 	@$(AR) $(INITRD) initrd/*

@@ -23,7 +23,7 @@
 void gpio_init(void)
 {
 	// enable clocks
-	RCC->AHB2ENR |= 0xFF;
+	RCC->AHB2ENR |= 0x0F;
 }
 
 void gpio_pupd(GPIO_TypeDef *port, uint32_t pin, uint32_t pupd)

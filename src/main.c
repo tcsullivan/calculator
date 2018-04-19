@@ -21,6 +21,7 @@
 #include <clock.h>
 #include <display.h>
 #include <display_draw.h>
+#include <fat32.h>
 #include <flash.h>
 #include <gpio.h>
 #include <heap.h>
@@ -30,6 +31,7 @@
 #include <it/parser.h>
 #include <random.h>
 #include <script.h>
+#include <sdcard.h>
 #include <serial.h>
 #include <stm32l476xx.h>
 #include <string.h>
@@ -60,7 +62,7 @@ int main(void)
 	keypad_init();
 	flash_init();
 
-	gpio_mode(GPIOA, 5, OUTPUT);
+	//gpio_mode(GPIOA, 5, OUTPUT); // taken by sd
 
 	// enable FPU
 	SCB->CPACR |= (0xF << 20);
@@ -71,9 +73,25 @@ int main(void)
 	while (1);
 }
 
+void sleep(void)
+{
+	dsp_sleep();
+	*((uint32_t *)0xE000ED10) |= 4; // SLEEPDEEP
+	PWR->CR1 |= 2;
+	asm("wfi");
+}
+
+void wakeup(void)
+{
+	clock_init();
+	dsp_wakeup();
+}
+
 void kmain(void)
 {
 	dsp_init();
+	sd_init();
+	fat_find();
 	dsp_cursoron();
 	keypad_start();
 
@@ -81,30 +99,37 @@ void kmain(void)
 	task_start(task_status, 512);
 
 	while (1) {
-		gpio_dout(GPIOA, 5, 1);
-		delay(250);
-		gpio_dout(GPIOA, 5, 0);
-		delay(250);
+		extern uint32_t sleep_pending;
+		if (sleep_pending != 0) {
+			sleep();
+			while (sleep_pending)
+				delay(1);
+		}
+		//gpio_dout(GPIOA, 5, 1);
+		//delay(250);
+		//gpio_dout(GPIOA, 5, 0);
+		delay(100);
 	}
 }
 
 instance *load_program(const char *name)
 {
 	// load file
-	char *s = initrd_readfile(name);
-	if (s == 0) {
+	file_t *file = fat_findfile(name);
+	if (file == 0) {
 		dsp_puts("can't find ");
 		dsp_puts(name);
 		goto fail;
 	}
 
+	char *s = fat_readfile(file);
 	instance *it = inewinstance();
 	script_loadlib(it);
 
 	// read in, parse into script code
 	char *linebuf = (char *)malloc(120);
 	uint32_t i = 0, prev = 0, lc;
-	uint32_t size = initrd_filesize(name);
+	uint32_t size = file->size;
 	int ret = 0;
 	while (i < size) {
 		for (; s[i] != '\n' && s[i] != '\0'; i++);
@@ -121,6 +146,8 @@ instance *load_program(const char *name)
 		prev = ++i;
 	}
 	free(linebuf);
+	free(s);
+	free(file);
 	return it;
 fail:
 	while (1);

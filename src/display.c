@@ -206,7 +206,13 @@ void dsp_init(void)
 	dsp_write_cmd(0x11);
 	delay(150);
 	dsp_write_cmd(0x29); // set display on
-	delay(500);
+	delay(150);
+
+	dsp_write_cmd(0x53);
+	dsp_write_data(0x2C);
+	//dsp_write_cmd(0x51);
+	//dsp_write_data(128);
+
 	/*dsp_write_cmd(0x33); // set scroll area
 	dsp_write_data(0x00);
 	dsp_write_data(0x00);
@@ -217,5 +223,34 @@ void dsp_init(void)
 	dsp_write_cmd(0x37);
 	dsp_write_data(0x00);
 	dsp_write_data(0x00);*/
+}
+
+void dsp_backlight(uint8_t value)
+{
+	dsp_write_cmd(0x51);
+	dsp_write_data(value);
+}
+
+void dsp_sleep(void)
+{
+	// backlight
+	dsp_backlight(0x00);
+	// display off
+	dsp_write_cmd(0x28);
+	// sleep mode
+	dsp_write_cmd(0x10);
+	delay(5);
+}
+
+void dsp_wakeup(void)
+{
+	// unsleep
+	dsp_write_cmd(0x11);
+	//delay(5);
+	for (uint32_t i = 0; i < 20000; i++)
+		asm("");
+	// display on
+	dsp_write_cmd(0x29);
+	dsp_backlight(0xFF);
 }
 

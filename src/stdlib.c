@@ -85,7 +85,6 @@ char *snprintf(char *buf, unsigned int max, const char *format, ...)
 
 float strtof(const char *s, char **endptr)
 {
-	(void)s;
 	(void)endptr;
 
 	float res = 0.0f;
@@ -138,6 +137,12 @@ char *ftostr(char *buf, float f)
 {
 	if (buf == 0)
 		return 0;
+
+	if (f == 0) {
+		buf[0] = '0';
+		buf[1] = '\0';
+		return buf;
+	}
 
 	unsigned int i = 0; // offset
 

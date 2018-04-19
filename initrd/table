@@ -1,0 +1,85 @@
+ppos(0, 0)
+array(table, 1)
+
+index = 0
+while (1) {
+	c = getkey()
+	# down
+	if (c == 25) {
+		rpos(0, 1)
+		index = index + 1
+	}
+	# up
+	if (c == 24) {
+		rpos(0, -1)
+		if (index > 0) {
+			index = index - 1
+		}
+	}
+	# right - insert
+	if (c == 26) {
+		print("          ")
+		rpos(-10, 0)
+		print("> ")
+		table.index = getf()
+		ppos(0, index)
+		print(index)
+		print(": ")
+		print(table.index)
+		print("         ")
+		index = index + 1
+		ppos(0, index)
+	}
+	# plus - sum
+	if (c == 43) {
+		s = size(table)
+		j = 0
+		sum = 0
+		while (j < s) {
+			sum = sum + table.j
+			j = j + 1
+		}
+		ppos(0, 17)
+		print("                    ")
+		ppos(0, 17)
+		print("sum: ")
+		print(sum)
+		ppos(0, 0)
+		index = 0
+	}
+	# * - product
+	if (c == 42) {
+		s = size(table)
+		j = 0
+		product = 1
+		while (j < s) {
+			product = product * table.j
+			j = j + 1
+		}
+		ppos(0, 17)
+		print("                    ")
+		ppos(0, 17)
+		print("product: ")
+		print(product)
+		ppos(0, 0)
+		index = 0
+	}
+	# / - average
+	if (c == 47) {
+		s = size(table)
+		j = 0
+		sum = 0
+		while (j < s) {
+			sum = sum + table.j
+			j = j + 1
+		}
+		average = sum / size(table)
+		ppos(0, 17)
+		print("                    ")
+		ppos(0, 17)
+		print("average: ")
+		print(average)
+		ppos(0, 0)
+		index = 0
+	}
+}

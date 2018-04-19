@@ -41,24 +41,24 @@ func(makegrid) {
 #
 
 makegrid()
-clearcmd = "clear"
+clearcmd = ""
 while (1) {
 	rect(0, 0, 480, 40, 0)
 	print("f(x) = ")
-	Fx = gets()
+	fx = gets()
 
-	if (Fx == clearcmd) {
+	if (fx == clearcmd) {
 		makegrid()
 	} else {
 		# do function
-		x = xmin
-		while (x < xmax) {
-			y = solve(Fx)
+		X = xmin
+		while (X < xmax) {
+			y = solve(fx)
 			y = 0 - y
 			if ((y >= ymin) & (y <= ymax)) {
-				pixel(cx + x * xinc, cy + y * yinc, 511)
+				pixel(cx + X * xinc, cy + y * yinc, 511)
 			}
-			x = x + 1 / xinc
+			X = X + 1 / xinc
 		}
 	}
 
