@@ -27,7 +27,7 @@ STRIP = strip
 
 MCUFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 AFLAGS = $(MCUFLAGS) 
-CFLAGS = $(MCUFLAGS) -ggdb \
+CFLAGS = $(MCUFLAGS) -O2 \
 	-Iinclude -Iinclude/cmsis \
 	-fno-builtin -fsigned-char -ffreestanding \
 	-Wall -Werror -Wextra -pedantic \

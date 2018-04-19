@@ -25,44 +25,22 @@
 #include <task.h>
 #include <clock.h>
 
-#define C_WIDTH  12
-#define C_HEIGHT 16
-#define S_WIDTH  40
-#define S_HEIGHT 18
-
 volatile uint8_t lock = 0;
 #define LOCK while (lock) { delay(5); } task_hold(1); lock = 1
 #define UNLOCK task_hold(0); lock = 0
 
-static unsigned int curx = 0;
-static unsigned int cury = 0;
-static unsigned int curxo = 0;
-static unsigned int curyo = 0;
 static unsigned char *font;
-
-void task_cursor(void)
-{
-	while (1) {
-		int x = curxo + curx * C_WIDTH;
-		int y = curyo + cury * C_HEIGHT;
-		dsp_rect(x, y + C_HEIGHT, C_WIDTH, 1, 0xFFFF);
-		delay(300);
-		dsp_rect(x, y + C_HEIGHT, C_WIDTH, 1, 0);
-		delay(300);
-	}
-}
 
 void dsp_cursoron(void)
 {
 	font = malloc(32 * 256);
 	flash_read((char *)font, 0, 32 * 256);
-	task_start(task_cursor, 512);
 }
 
-void dsp_putchar(int c)
+void dsp_putchar(int c, unsigned int xpos, unsigned int ypos)
 {
 	LOCK;
-	if (c == '\n') {
+	/*if (c == '\n') {
 		curx = 0;
 		if (++cury == S_HEIGHT) {
 			UNLOCK;
@@ -78,10 +56,10 @@ void dsp_putchar(int c)
 		dsp_rect(curxo + curx * C_WIDTH, curyo + cury * C_HEIGHT,
 			C_WIDTH, C_HEIGHT, 0);
 		return;
-	}
+	}*/
 
-	unsigned int x = curxo + curx * C_WIDTH;
-	unsigned int y = curyo + cury * C_HEIGHT;
+	unsigned int x = xpos * C_WIDTH;
+	unsigned int y = ypos * C_HEIGHT;
 	dsp_set_addr(x, y, x + C_WIDTH - 1, y + C_HEIGHT - 1);
 
 	uint32_t base = c * 32;
@@ -94,7 +72,7 @@ void dsp_putchar(int c)
 		}
 	}
 
-	if (++curx == S_WIDTH) {
+	/*if (++curx == S_WIDTH) {
 		curx = 0;
 		if (++cury == S_HEIGHT) {
 			UNLOCK;
@@ -102,37 +80,14 @@ void dsp_putchar(int c)
 			LOCK;
 			cury = 0;
 		}
-	}
+	}*/
 
 	UNLOCK;
 }
 
-void dsp_puts(const char *s)
-{
-	unsigned int i = 0;
-	while (s[i])
-		dsp_putchar(s[i++]);
-}
-
-void dsp_cpos(int x, int y)
-{
-	curx = x;
-	cury = y;
-}
-
-void dsp_spos(int x, int y)
-{
-	if ((int)curx + x >= 0)
-		curx += x;
-	if ((int)cury + y >= 0)
-		cury += y;
-}
-
-void dsp_coff(int x, int y)
-{
-	curxo = x;
-	curyo = y;
-}
+//
+// Drawing functions
+//
 
 void dsp_rect(int x, int y, int w, int h, uint16_t color)
 {

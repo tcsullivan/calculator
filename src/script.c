@@ -25,6 +25,7 @@
 #include <ctype.h>
 #include <display.h>
 #include <display_draw.h>
+#include <display_text.h>
 #include <heap.h>
 #include <initrd.h>
 #include <it/string.h>
@@ -53,6 +54,7 @@ int script_menu(instance *it);
 int script_filemenu(instance *it);
 int script_program(instance *it);
 int script_free(instance *it);
+int script_clear(instance *it);
 
 int math_sin(instance *it);
 int math_cos(instance *it);
@@ -74,6 +76,7 @@ void script_loadlib(instance *it)
 	inew_cfunc(it, "line", script_line);
 	inew_cfunc(it, "rect", script_rect);
 	inew_cfunc(it, "color", script_color);
+	inew_cfunc(it, "clear", script_clear);
 
 	inew_cfunc(it, "rand", script_rand);
 	inew_cfunc(it, "delay", script_delay);
@@ -118,11 +121,15 @@ int script_menu(instance *it)
 	int nargs = igetarg_integer(it, 0);
 	float *resps = (float *)calloc(nargs, sizeof(float));
 	strncpy(listbuf, " : \0", 4);
+
+	text_switch(1);
+	text_clear();
+
 	for (int i = 0; i < nargs; i++) {
 		listbuf[0] = i + '0';
-		dsp_puts(listbuf);
-		dsp_puts((char *)igetarg(it, 1 + i * 2)->value.p);
-		dsp_puts("\n");
+		text_puts(listbuf);
+		text_puts((char *)igetarg(it, 1 + i * 2)->value.p);
+		text_puts("\n");
 		resps[i] = igetarg(it, 2 + i * 2)->value.f;
 	}
 
@@ -133,6 +140,7 @@ int script_menu(instance *it)
 	variable *v = make_varf(0, isdigit(c) ? c - '0' : -1.0f);
 	ipush(it, (uint32_t)v);
 
+	text_switch(0);
 	free(resps);
 	return 0;
 }
@@ -144,13 +152,13 @@ int script_filemenu(instance *it)
 	char listbuf[4];
 	char *fname;
 	strncpy(listbuf, " : \0", 4);
-	dsp_puts("Choose a file: \n");
+	text_puts("Choose a file: \n");
 	for (unsigned int i = 0; (fname = /*initrd*/fat_getname(i)) != 0; i++) {
 		listbuf[0] = i + '0';
-		dsp_puts(listbuf);
-		dsp_puts(fname);
+		text_puts(listbuf);
+		text_puts(fname);
 		free(fname);
-		dsp_puts("\n");
+		text_puts("\n");
 	}
 
 	int c;
@@ -170,9 +178,9 @@ int script_puts(instance *it)
 		char buf[33];
 		//snprintf(buf, 33, "%d", (int)v->value.f); // TODO
 		ftostr(buf, v->value.f);
-		dsp_puts(buf);
+		text_puts(buf);
 	} else if (v->type == STRING) {
-		dsp_puts((const char *)v->value.p);
+		text_puts((const char *)v->value.p);
 	}
 	return 0;
 }
@@ -184,7 +192,7 @@ int script_putchar(instance *it)
 	
 	buf[0] = (int)v->value.f;
 	buf[1] = '\0';
-	dsp_puts(buf);
+	text_puts(buf);
 
 	return 0;
 }
@@ -219,13 +227,13 @@ int script_gets(instance *it)
 			break;
 		} else if (c[0] == K_LEFT) {
 			if (index > 0) {
-				dsp_spos(-1, 0);
+				text_relpos(-1, 0);
 				index--;
 			}
 			continue;
 		} else if (c[0] == K_RIGHT) {
 			if (index < furthest) {
-				dsp_spos(1, 0);
+				text_relpos(1, 0);
 				index++;
 			}
 			continue;
@@ -247,17 +255,17 @@ int script_gets(instance *it)
 		if (c[0] == '\b' || c[0] == 127) {
 			index--;
 			if (index > -1) {
-				dsp_puts("\b");
+				text_puts("\b");
 				index--;
 			}
 		} else if (keypad_insert != 0) {
-			dsp_spos(-index, 0);
+			text_relpos(-index, 0);
 			s[furthest + 1] = '\0';
-			dsp_puts(s);
-			dsp_spos(-(furthest - index), 0);
+			text_puts(s);
+			text_relpos(-(furthest - index), 0);
 			furthest++;
 		} else if (c[0] != '\n'/*'\r'*/) {
-			dsp_puts(c);
+			text_puts(c);
 		}
 
 		if (++index > furthest)
@@ -299,14 +307,13 @@ int script_line(instance *it)
 
 int script_ppos(instance *it)
 {
-	dsp_coff(0, 0);
-	dsp_cpos(igetarg_integer(it, 0), igetarg_integer(it, 1));
+	text_setpos(igetarg_integer(it, 0), igetarg_integer(it, 1));
 	return 0;
 }
 
 int script_rpos(instance *it)
 {
-	dsp_spos(igetarg_integer(it, 0), igetarg_integer(it, 1));
+	text_relpos(igetarg_integer(it, 0), igetarg_integer(it, 1));
 	return 0;
 }
 
@@ -351,10 +358,7 @@ int script_program(instance *it)
 	int initrdOffset = (int)igetarg(it, 0)->value.f;
 	char *name = fat_getname(initrdOffset);
 
-	dsp_rect(0, 0, 480, 300, 0);
-	dsp_cpos(0, 0);
-	dsp_coff(0, 0);
-
+	text_clear();
 	instance *it2 = load_program(name);
 	free(name);
 
@@ -370,5 +374,12 @@ int script_free(instance *it)
 {
 	extern uint32_t heap_used;
 	ipush(it, (uint32_t)make_varf(0, 98303 - heap_used));
+	return 0;
+}
+
+int script_clear(instance *it)
+{
+	(void)it;
+	text_clear();
 	return 0;
 }

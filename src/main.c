@@ -21,6 +21,7 @@
 #include <clock.h>
 #include <display.h>
 #include <display_draw.h>
+#include <display_text.h>
 #include <fat32.h>
 #include <flash.h>
 #include <gpio.h>
@@ -90,9 +91,11 @@ void wakeup(void)
 void kmain(void)
 {
 	dsp_init();
+	dsp_cursoron();
+	text_init();
+
 	sd_init();
 	fat_find();
-	dsp_cursoron();
 	keypad_start();
 
 	task_start(task_interpreter, 4096);
@@ -117,8 +120,8 @@ instance *load_program(const char *name)
 	// load file
 	file_t *file = fat_findfile(name);
 	if (file == 0) {
-		dsp_puts("can't find ");
-		dsp_puts(name);
+		text_puts("can't find ");
+		text_puts(name);
 		goto fail;
 	}
 
@@ -184,6 +187,7 @@ void task_status(void)
 
 void task_interpreter(void)
 {
+	dsp_rect(0, 0, 480, 300, 0);
 	instance *it = load_program("init");
 
 	// run the script

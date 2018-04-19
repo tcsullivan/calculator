@@ -15,6 +15,8 @@ static uint32_t RootDirCluster;
 static uint32_t ClustersLBA;
 static uint32_t FATStartLBA;
 
+static uint8_t *RootDir = 0;
+
 int fat_find(void)
 {
 	uint8_t *block = malloc(512);
@@ -65,9 +67,12 @@ int fat_namecmp(const char *fatname, const char *name)
 
 file_t *fat_findfile(const char *name)
 {
-	uint8_t *block = malloc(512 * SectorsPerCluster);
-	sd_read(block, fat_cluster2lba(RootDirCluster), 512 * SectorsPerCluster);
+	if (RootDir == 0) {
+		RootDir = sd_read(malloc(512 * SectorsPerCluster),
+			fat_cluster2lba(RootDirCluster), 512 * SectorsPerCluster);
+	}
 
+	uint8_t *block = RootDir;
 	for (unsigned int i = 0; block[i * 32] != 0; i++) {
 		if (block[i * 32] == 0xE5 || (block[i * 32 + 11] & 0x0F) == 0x0F)
 			continue;
@@ -79,34 +84,34 @@ file_t *fat_findfile(const char *name)
 			file_t *file = malloc(sizeof(file_t));
 			file->size = size;
 			file->start = start;
-			free(block);
 			return file;
 		}
 	}
 
-	free(block);
 	return 0;
 }
 
 char *fat_getname(uint32_t index)
 {
-	uint8_t *block = malloc(512 * SectorsPerCluster);
-	sd_read(block, fat_cluster2lba(RootDirCluster), 512 * SectorsPerCluster);
+	if (RootDir == 0) {
+		RootDir = sd_read(malloc(512 * SectorsPerCluster),
+			fat_cluster2lba(RootDirCluster), 512 * SectorsPerCluster);
+	}
 
 	uint32_t idx = 0;
+	uint8_t *block = RootDir;
 	for (unsigned int i = 0; block[i * 32] != 0; i++) {
 		if (block[i * 32] == 0xE5 || (block[i * 32 + 11] & 0x0F) == 0x0F)
 			continue;
 
 		if (idx == index) {
-			char *name = strncpy(malloc(11), (char *)(block + i * 32), 11);
-			free(block);
+			char *name = strncpy(malloc(12), (char *)(block + i * 32), 11);
+			name[11] = '\0';
 			return name;
 		}
 		idx++;
 	}
 
-	free(block);
 	return 0;
 }
 

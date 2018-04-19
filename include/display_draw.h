@@ -23,6 +23,9 @@
 
 #include <stdint.h>
 
+#define C_WIDTH  12
+#define C_HEIGHT 16
+
 /**
  * Starts the task for a blinking text cursor.
  */
@@ -56,30 +59,6 @@ void dsp_line(int x, int y, int i, int j, uint16_t color);
  */
 void dsp_rect(int x, int y, int w, int h, uint16_t color);
 
-/**
- * Sets the text cursor's position, in characters NOT pixels.
- * @param x text column to move to
- * @param y text row to move to
- */
-void dsp_cpos(int x, int y);
-
-/*
- * Shifts the cursor the given amount of characters.
- */
-void dsp_spos(int x, int y);
-
-/**
- * Sets the pixel offset of the text cursor.
- * @param x x-pixel offset from (0, 0)
- * @param y y-pixel offset from (0, 0)
- */
-void dsp_coff(int x, int y);
-
-/**
- * Puts a string to the screen. Text position if kept track of internally, so
- * multiple calls will print the strings in one line.
- * @param s the string to print
- */
-void dsp_puts(const char *s);
+void dsp_putchar(int c, unsigned int xpos, unsigned int ypos);
 
 #endif // DISPLAY_DRAW_H_
