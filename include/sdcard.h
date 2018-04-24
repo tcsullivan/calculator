@@ -1,5 +1,5 @@
 /**
- * @file sdcard.c
+ * @file sdcard.h
  * Provides a basic library for accessing an SD card
  *
  * Copyright (C) 2018 Clyne Sullivan

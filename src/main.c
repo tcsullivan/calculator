@@ -26,9 +26,7 @@
 #include <flash.h>
 #include <gpio.h>
 #include <heap.h>
-#include <initrd.h>
 #include <keypad.h>
-#include <lcd.h>
 #include <it/parser.h>
 #include <random.h>
 #include <script.h>
@@ -55,6 +53,7 @@ int main(void)
 	FLASH->ACR &= ~(FLASH_ACR_LATENCY);
 	FLASH->ACR |= FLASH_ACR_LATENCY_4WS;
 
+	// init core components
 	clock_init();
 	heap_init(&__bss_end__);
 	random_init();
@@ -63,17 +62,14 @@ int main(void)
 	keypad_init();
 	flash_init();
 
-	//gpio_mode(GPIOA, 5, OUTPUT); // taken by sd
-
 	// enable FPU
 	SCB->CPACR |= (0xF << 20);
-	// enable MPU
-	//MPU->CTRL |= MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_ENABLE_Msk;
 
 	task_init(kmain);
 	while (1);
 }
 
+// enters deep sleep, activated through button press
 void sleep(void)
 {
 	dsp_sleep();
@@ -82,6 +78,8 @@ void sleep(void)
 	asm("wfi");
 }
 
+// wakes up from sleep, re-initializes components that
+// need to be
 void wakeup(void)
 {
 	clock_init();
@@ -90,14 +88,17 @@ void wakeup(void)
 
 void kmain(void)
 {
+	// prepare display
 	dsp_init();
 	dsp_cursoron();
 	text_init();
 
+	// prepare SD card and keypad
 	sd_init();
 	fat_find();
 	keypad_start();
 
+	// start tasks
 	task_start(task_interpreter, 4096);
 	task_start(task_status, 512);
 
@@ -108,13 +109,18 @@ void kmain(void)
 			while (sleep_pending)
 				delay(1);
 		}
-		//gpio_dout(GPIOA, 5, 1);
-		//delay(250);
-		//gpio_dout(GPIOA, 5, 0);
 		delay(100);
 	}
 }
 
+/**
+ * Loads the given script on SD card into an interpreter instance.
+ * @param name the file's name
+ * @return a new, loaded instance
+ * Files are expected to be in the root directory of the filesystem.
+ * See fat32.h for more info.
+ * Pass the returned instance to irun() to start the script.
+ */
 instance *load_program(const char *name)
 {
 	// load file
@@ -157,8 +163,10 @@ fail:
 	return 0;
 }
 
- 
-
+/**
+ * Display and update a status bar.
+ * This currently only has an icon for insert/delete mode.
+ */
 void task_status(void)
 {
 	extern int keypad_insert;
@@ -185,6 +193,9 @@ void task_status(void)
 	}
 }
 
+/**
+ * Loads the initial program from the SD card and runs it.
+ */
 void task_interpreter(void)
 {
 	dsp_rect(0, 0, 480, 300, 0);

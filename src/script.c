@@ -27,7 +27,6 @@
 #include <display_draw.h>
 #include <display_text.h>
 #include <heap.h>
-#include <initrd.h>
 #include <it/string.h>
 #include <keypad.h>
 #include <math.h>
@@ -55,6 +54,7 @@ int script_filemenu(instance *it);
 int script_program(instance *it);
 int script_free(instance *it);
 int script_clear(instance *it);
+int script_tty(instance *it);
 
 int math_sin(instance *it);
 int math_cos(instance *it);
@@ -85,6 +85,7 @@ void script_loadlib(instance *it)
 	inew_cfunc(it, "filemenu", script_filemenu);
 	inew_cfunc(it, "program", script_program);
 	inew_cfunc(it, "freemem", script_free);
+	inew_cfunc(it, "tty", script_tty);
 
 	inew_cfunc(it, "sin", math_sin);
 	inew_cfunc(it, "cos", math_cos);
@@ -152,8 +153,10 @@ int script_filemenu(instance *it)
 	char listbuf[4];
 	char *fname;
 	strncpy(listbuf, " : \0", 4);
+	//text_switch(1);
+	//text_clear();
 	text_puts("Choose a file: \n");
-	for (unsigned int i = 0; (fname = /*initrd*/fat_getname(i)) != 0; i++) {
+	for (unsigned int i = 0; (fname = fat_getname(i)) != 0; i++) {
 		listbuf[0] = i + '0';
 		text_puts(listbuf);
 		text_puts(fname);
@@ -168,6 +171,7 @@ int script_filemenu(instance *it)
 	variable *v = make_varf(0, isdigit(c) ? c - '0' : -1.0f);
 	ipush(it, (uint32_t)v);
 
+	//text_switch(0);
 	return 0;
 }
 
@@ -222,6 +226,15 @@ int script_gets(instance *it)
 			delay(1);
 		} while (c[0] == 0);
 
+		// fn keys
+		if (c[0] == 0x11 || c[0] == 0x12 || c[0] == 0x13) {
+			/*s[index] = c[0];
+			if (furthest == 0)
+				furthest = 1;
+			break;*/
+			continue;
+		}
+
 		if (c[0] == 0x7F) {
 			it->lnidx = 998;
 			break;
@@ -240,10 +253,8 @@ int script_gets(instance *it)
 		} else if (c[0] == K_UP || c[0] == K_DOWN)
 			continue;
 
-		if (c[0] == '\n') {
-			s[furthest] = '\n';
+		if (c[0] == '\n')
 			break;
-		}
 
 		extern int keypad_insert;
 		if (keypad_insert != 0 && index < furthest) {
@@ -355,13 +366,13 @@ int script_pixel(instance *it)
 extern instance *load_program(const char *name);
 int script_program(instance *it)
 {
-	int initrdOffset = (int)igetarg(it, 0)->value.f;
-	char *name = fat_getname(initrdOffset);
+	int offset = (int)igetarg(it, 0)->value.f;
+	char *name = fat_getname(offset);
 
-	text_clear();
 	instance *it2 = load_program(name);
 	free(name);
 
+	text_clear();
 	int ret = irun(it2);
 	if (ret != 0)
 		return -1;
@@ -381,5 +392,11 @@ int script_clear(instance *it)
 {
 	(void)it;
 	text_clear();
+	return 0;
+}
+
+int script_tty(instance *it)
+{
+	text_switch(igetarg_integer(it, 0));
 	return 0;
 }

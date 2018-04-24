@@ -21,9 +21,6 @@
 CROSS = arm-none-eabi-
 CC = gcc
 AS = as
-AR = tools/rba
-OBJCOPY = objcopy
-STRIP = strip
 
 MCUFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 AFLAGS = $(MCUFLAGS) 
@@ -42,15 +39,10 @@ OFILES = $(patsubst src/%.c, $(OUTDIR)/%.o, $(CFILES)) \
 	 $(patsubst src/%.s, $(OUTDIR)/%.asm.o, $(AFILES))
 
 OUT = out/main.elf
-INITRD = initrd.img
 
 all: $(OUT)
 
-$(OUT): $(OFILES) initrd/* libinterp.a
-	@echo "  INITRD " $(INITRD)
-	@rm -f $(INITRD)
-	@$(AR) $(INITRD) initrd/*
-	@$(CROSS)$(OBJCOPY) -B arm -I binary -O elf32-littlearm $(INITRD) out/initrd.img.o
+$(OUT): $(OFILES)
 	@echo "  LINK   " $(OUT)
 	@$(CROSS)$(CC) $(CFLAGS) $(LFLAGS) out/*.o -o $(OUT) -L. -linterp -lm
 
